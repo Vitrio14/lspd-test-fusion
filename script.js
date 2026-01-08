@@ -220,6 +220,7 @@ function loadQuestion() {
     
     const isLastQuestion = currentQuestion === currentQuestionsDB.length - 1;
 
+    // Generazione della barra numerica
     const questionDots = currentQuestionsDB.map((_, i) => {
         let stateClass = "";
         if (i === currentQuestion) stateClass = "active";
@@ -231,12 +232,15 @@ function loadQuestion() {
         <div class="question-nav-bar" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center;">
             ${questionDots}
         </div>
+
         <h2 style="color: var(--main-blue); font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase;">
             MODULO ${currentQuestion + 1} / ${currentQuestionsDB.length}
         </h2>
+        
         <div class="question-text" style="font-size: 1.1rem; margin-bottom: 25px; padding: 15px; background: rgba(0, 114, 255, 0.05); border-left: 3px solid var(--main-blue);">
             ${qData.q}
         </div>
+
         <div class="options-list">
             ${qData.options.map((opt, i) => `
                 <button class="option ${userAnswers[currentQuestion] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
@@ -244,12 +248,11 @@ function loadQuestion() {
                 </button>
             `).join('')}
         </div>
-        <div class="nav-controls" style="margin-top: 30px; display: flex; justify-content: space-between; gap: 15px;">
-            <button class="btn-primary" style="flex: 1; opacity: ${currentQuestion === 0 ? '0.3' : '1'};" 
-                onclick="prevQuestion()" ${currentQuestion === 0 ? 'disabled' : ''}>PRECEDENTE</button>
+
+        <div class="nav-controls" style="margin-top: 30px; display: flex; justify-content: center;">
             ${isLastQuestion 
-                ? `<button class="btn-primary" style="flex: 1; background: var(--success-green) !important;" onclick="openReviewModal()">REVISIONE FINALE</button>`
-                : `<button class="btn-primary" style="flex: 1;" onclick="nextQuestion()">SUCCESSIVA</button>`
+                ? `<button class="btn-primary" style="width: 100%; background: var(--success-green) !important;" onclick="openReviewModal()">REVISIONE FINALE</button>`
+                : `<p style="font-size: 0.8rem; opacity: 0.5; font-style: italic;">Seleziona una risposta per proseguire o usa i numeri in alto per navigare</p>`
             }
         </div>
     `;

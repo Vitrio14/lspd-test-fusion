@@ -148,16 +148,34 @@ function backToName() {
 }
 
 function selectExam(type) {
+    // 1. Identifica il database corretto
+    let dbOriginale = type === 'recluta' ? questionsRecluta : questionsSergente;
+    
+    // 2. RANDOMIZZAZIONE: Mescola le domande e ne prende 20
+    // Usiamo lo spread operator [...] per non modificare l'ordine originale nel file
+    currentQuestionsDB = shuffleArray([...dbOriginale]).slice(0, 20); 
+
+    // 3. Impostazioni esame
     examType = type === 'recluta' ? "RECLUTA / CADETTO" : "SERGENTE";
-    currentQuestionsDB = type === 'recluta' ? questionsRecluta : questionsSergente;
     userAnswers = new Array(currentQuestionsDB.length).fill(undefined);
     currentQuestion = 0;
     
+    // 4. Interfaccia
     document.getElementById('nameModal').classList.add('hidden');
     document.getElementById('course-section').classList.add('hidden');
     document.getElementById('briefing-title').innerText = `BRIEFING ESAME ${examType}`;
     document.getElementById('briefing-section').classList.remove('hidden');
-    showNotification("DATA-PACK CARICATO", "warning");
+    
+    showNotification("DATA-PACK MESCOLATO E CARICATO", "warning");
+}
+
+// Funzione Utility per mescolare l'array (Algoritmo Fisher-Yates)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 function cancelBriefing() {
@@ -322,15 +340,22 @@ async function submitExam() {
         const rispostaUtente = userAnswers[index];
         const isCorretta = rispostaUtente === q.correct;
         if (isCorretta) score++;
+        
+        // Costruisce il report per Discord
         reportDettagliato += `**D${index + 1}:** ${q.q}\n`;
-        reportDettagliato += `${isCorretta ? "✅" : "❌"} Risposta: *${q.options[rispostaUtente]}*\n\n`;
+        reportDettagliato += `${isCorretta ? "✅" : "❌"} Risposta data: *${q.options[rispostaUtente] || "Nessuna"}*\n\n`;
     });
 
     const total = currentQuestionsDB.length;
     const percent = Math.round((score / total) * 100);
-    const status = score >= 15 ? "IDONEO" : "NON IDONEO";
+
+    // --- CALCOLO IDONEITÀ DINAMICO (Esempio: 75% per passare) ---
+    // Se vuoi restare fedele ai "15 su 20", il 75% è la misura perfetta.
+    const status = percent >= 75 ? "IDONEO" : "NON IDONEO";
 
     showResults(score, total, percent, status);
+    
+    // Invio ai Webhook
     await sendToDiscord(userName, score, percent, status, examType);
     await sendDetailedToDiscord(userName, score, reportDettagliato, examType, tempoImpiegato);
 }
@@ -342,9 +367,13 @@ function showResults(pts, total, perc, stat) {
     document.getElementById('exam-timer').classList.add('hidden');
     if(document.getElementById('abort-btn')) document.getElementById('abort-btn').classList.add('hidden');
     
+    // CAMBIO QUI: Usiamo 'stat' (che è calcolato sulla percentuale) per decidere il colore
+    const isPass = stat === "IDONEO";
+    const color = isPass ? 'var(--success-green)' : 'var(--error-red)';
+
     document.getElementById('score-display').innerHTML = `
-        <div style="border: 1px solid ${pts >= 15 ? 'var(--success-green)' : 'var(--error-red)'}; padding: 25px; background: rgba(0,0,0,0.3);">
-            <h3 style="color: ${pts >= 15 ? 'var(--success-green)' : 'var(--error-red)'};">ESITO: ${stat}</h3>
+        <div style="border: 1px solid ${color}; padding: 25px; background: rgba(0,0,0,0.3);">
+            <h3 style="color: ${color};">ESITO: ${stat}</h3>
             <p>AGENTE: ${userName}</p>
             <p>PUNTEGGIO: ${pts}/${total} (${perc}%)</p>
             <p style="font-size: 0.8rem; margin-top: 15px; opacity: 0.7;">I dati sono stati inviati al database centrale LSPD.</p>
@@ -409,3 +438,65 @@ function finalLogout() {
 }
 
 window.onbeforeunload = () => { if (isExamStarted) return "Il test verrà annullato!"; };
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// --- SISTEMA ANTI-CHEAT ---
+
+// 1. Rileva se l'utente cambia scheda o riduce il browser (ALT-TAB / TASTO WINDOWS)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && isExamStarted) {
+        forceAbortExam("VIOLAZIONE RILEVATA: USCITA DAL TERMINALE");
+    }
+});
+
+// 2. Funzione per l'annullamento forzato (Senza alert di sistema)
+async function forceAbortExam(reason) {
+    if (!isExamStarted) return;
+    
+    clearInterval(timerInterval);
+    isExamStarted = false;
+    
+    // Salviamo il messaggio per mostrarlo tramite showNotification al ricaricamento
+    localStorage.setItem("pendingNotification", reason);
+    localStorage.setItem("pendingType", "error");
+
+    // Invio log immediato a Discord
+    await sendToDiscord(userName, 0, 0, `🛑 ANNULLATO: ${reason}`, examType);
+    
+    // Ricarica la pagina per resettare il terminale
+    location.reload();
+}
+
+// 3. Impedisce il tasto destro su tutto il portale
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// 4. Impedisce scorciatoie tastiera comuni per il debug (F12, Ctrl+Shift+I, Ctrl+U)
+document.addEventListener('keydown', (e) => {
+    if (
+        e.key === "F12" || 
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || 
+        (e.ctrlKey && e.key === "u")
+    ) {
+        e.preventDefault();
+        showNotification("AZIONE NON AUTORIZZATA", "error");
+    }
+});
+
+
+// Impedisce il tasto destro su tutto il portale
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Impedisce scorciatoie tastiera comuni per il debug (F12, Ctrl+Shift+I)
+document.addEventListener('keydown', (e) => {
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+        e.preventDefault();
+        showNotification("AZIONE NON AUTORIZZATA", "error");
+    }
+});

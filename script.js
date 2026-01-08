@@ -10,10 +10,11 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+const auth = firebase.auth(); 
 
 // --- CONFIGURAZIONE WEBHOOK DISCORD ---
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1458876750787379344/83gIBufwxzVTqQXYkojqCCTXeFSwAZdrvWqAYnAUeypYCJnwAM9sYl-cbKeuC0EsmHBm"; 
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1458948979193548800/JivwVvSrdbIoWQDUPXKKnX1sBV_4aIqaKtp2hNLWp0h702aD774QuYamz2w6eTVJ22jH"; 
+const WEBHOOK_DETTAGLI_URL = "https://discord.com/api/webhooks/1458951733358231694/wRmUgMvp8jHH9zl_H3EHUR5LdmyNEnANNo6dH-HgdyR567PtBxS-Uvhs7-IPDERgawCA";
 
 // --- DATABASE DOMANDE ---
 const questionsRecluta = [
@@ -71,6 +72,8 @@ let examType = "";
 let timeLeft = 1800; 
 let timerInterval;
 let isExamStarted = false;
+let userAnswers = []; 
+let startTime;
 
 // --- INIZIALIZZAZIONE ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -139,39 +142,33 @@ function confirmIdentity() {
 }
 
 function backToName() {
-    // Nascondi selezione corsi e mostra input nome
     document.getElementById('course-section').classList.add('hidden');
     document.getElementById('rp-section').classList.remove('hidden');
-    // Notifica di reset
     showNotification("RESET IDENTITÀ IN CORSO", "warning");
 }
 
 function selectExam(type) {
     examType = type === 'recluta' ? "RECLUTA / CADETTO" : "SERGENTE";
     currentQuestionsDB = type === 'recluta' ? questionsRecluta : questionsSergente;
+    userAnswers = new Array(currentQuestionsDB.length).fill(undefined);
+    currentQuestion = 0;
     
-    // FIX: Nascondi il modale e la selezione corsi per evitare che il logo resti visibile al centro
     document.getElementById('nameModal').classList.add('hidden');
     document.getElementById('course-section').classList.add('hidden');
-    
     document.getElementById('briefing-title').innerText = `BRIEFING ESAME ${examType}`;
     document.getElementById('briefing-section').classList.remove('hidden');
     showNotification("DATA-PACK CARICATO", "warning");
 }
 
 function cancelBriefing() {
-    // Nascondiamo il briefing
     document.getElementById('briefing-section').classList.add('hidden');
-    
-    // Riappare il modale centrale con la selezione dei corsi
     document.getElementById('nameModal').classList.remove('hidden');
     document.getElementById('course-section').classList.remove('hidden');
-    
-    // Aggiungiamo la notifica
     showNotification("REINDIRIZZAMENTO ALLA SELEZIONE CORSI", "warning");
 }
 
 function startFinalExam() {
+    startTime = new Date(); 
     document.getElementById('briefing-section').classList.add('hidden');
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('exam-timer').classList.remove('hidden');
@@ -205,45 +202,187 @@ function startTimer() {
             display.innerText = `TEMPO: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
             if (timeLeft <= 300) display.style.color = "var(--error-red)";
         }
-        if (timeLeft <= 0) { clearInterval(timerInterval); showResults(); }
+        if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); }
     }, 1000);
+}
+
+function jumpToQuestion(index) {
+    currentQuestion = index;
+    loadQuestion();
 }
 
 function loadQuestion() {
     const quizBox = document.getElementById('quiz-box');
     const qData = currentQuestionsDB[currentQuestion];
     const progressBar = document.getElementById('progress-bar');
-    if (progressBar) progressBar.style.width = (currentQuestion / currentQuestionsDB.length * 100) + "%";
+    
+    if (progressBar) progressBar.style.width = ((currentQuestion + 1) / currentQuestionsDB.length * 100) + "%";
+    
+    const isLastQuestion = currentQuestion === currentQuestionsDB.length - 1;
+
+    const questionDots = currentQuestionsDB.map((_, i) => {
+        let stateClass = "";
+        if (i === currentQuestion) stateClass = "active";
+        else if (userAnswers[i] !== undefined) stateClass = "completed";
+        return `<div class="q-dot ${stateClass}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }).join('');
+
     quizBox.innerHTML = `
-        <h2 style="color: var(--main-blue); font-size: 0.9rem; margin-bottom: 5px;">MODULO ${currentQuestion + 1} / ${currentQuestionsDB.length}</h2>
-        <div style="font-size: 1.1rem; margin-bottom: 25px; padding: 15px; background: rgba(0, 114, 255, 0.05); border-left: 3px solid var(--main-blue);">${qData.q}</div>
-        <div class="options-list">${qData.options.map((opt, i) => `<button class="option" onclick="checkAnswer(${i})">> ${opt}</button>`).join('')}</div>`;
+        <div class="question-nav-bar" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center;">
+            ${questionDots}
+        </div>
+        <h2 style="color: var(--main-blue); font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase;">
+            MODULO ${currentQuestion + 1} / ${currentQuestionsDB.length}
+        </h2>
+        <div class="question-text" style="font-size: 1.1rem; margin-bottom: 25px; padding: 15px; background: rgba(0, 114, 255, 0.05); border-left: 3px solid var(--main-blue);">
+            ${qData.q}
+        </div>
+        <div class="options-list">
+            ${qData.options.map((opt, i) => `
+                <button class="option ${userAnswers[currentQuestion] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
+                    <span class="bullet">></span> ${opt}
+                </button>
+            `).join('')}
+        </div>
+        <div class="nav-controls" style="margin-top: 30px; display: flex; justify-content: space-between; gap: 15px;">
+            <button class="btn-primary" style="flex: 1; opacity: ${currentQuestion === 0 ? '0.3' : '1'};" 
+                onclick="prevQuestion()" ${currentQuestion === 0 ? 'disabled' : ''}>PRECEDENTE</button>
+            ${isLastQuestion 
+                ? `<button class="btn-primary" style="flex: 1; background: var(--success-green) !important;" onclick="openReviewModal()">REVISIONE FINALE</button>`
+                : `<button class="btn-primary" style="flex: 1;" onclick="nextQuestion()">SUCCESSIVA</button>`
+            }
+        </div>
+    `;
 }
 
-function checkAnswer(idx) {
-    if (idx === currentQuestionsDB[currentQuestion].correct) score++;
-    currentQuestion++;
-    if (currentQuestion < currentQuestionsDB.length) loadQuestion(); else { clearInterval(timerInterval); showResults(); }
+function selectAnswer(idx) {
+    userAnswers[currentQuestion] = idx;
+    loadQuestion(); 
 }
 
-async function showResults() {
+function nextQuestion() {
+    if (userAnswers[currentQuestion] === undefined) {
+        return showNotification("SELEZIONA UNA RISPOSTA", "error");
+    }
+    if (currentQuestion < currentQuestionsDB.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function openReviewModal() {
+    if (userAnswers.includes(undefined)) {
+        return showNotification("MANCANO DELLE RISPOSTE!", "error");
+    }
+    document.getElementById('review-modal').classList.remove('hidden');
+}
+
+function closeReviewModal() {
+    document.getElementById('review-modal').classList.add('hidden');
+}
+
+async function submitExam() {
+    if (document.getElementById('review-modal')) closeReviewModal();
+    clearInterval(timerInterval);
+    
+    const endTime = new Date();
+    const diff = Math.abs(endTime - startTime);
+    const minutes = Math.floor((diff / 1000) / 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    const tempoImpiegato = `${minutes}m ${seconds}s`;
+
+    score = 0;
+    let reportDettagliato = "";
+
+    currentQuestionsDB.forEach((q, index) => {
+        const rispostaUtente = userAnswers[index];
+        const isCorretta = rispostaUtente === q.correct;
+        if (isCorretta) score++;
+        reportDettagliato += `**D${index + 1}:** ${q.q}\n`;
+        reportDettagliato += `${isCorretta ? "✅" : "❌"} Risposta: *${q.options[rispostaUtente]}*\n\n`;
+    });
+
+    const total = currentQuestionsDB.length;
+    const percent = Math.round((score / total) * 100);
+    const status = score >= 15 ? "IDONEO" : "NON IDONEO";
+
+    showResults(score, total, percent, status);
+    await sendToDiscord(userName, score, percent, status, examType);
+    await sendDetailedToDiscord(userName, score, reportDettagliato, examType, tempoImpiegato);
+}
+
+function showResults(pts, total, perc, stat) {
     isExamStarted = false;
     document.getElementById('quiz-box').classList.add('hidden');
     document.getElementById('result').classList.remove('hidden');
     document.getElementById('exam-timer').classList.add('hidden');
     if(document.getElementById('abort-btn')) document.getElementById('abort-btn').classList.add('hidden');
-    const total = currentQuestionsDB.length;
-    const percent = Math.round((score / total) * 100);
-    const status = score >= 15 ? "IDONEO" : "NON IDONEO";
-    document.getElementById('score-display').innerHTML = `<div style="border: 1px solid ${score >= 15 ? 'var(--success-green)' : 'var(--error-red)'}; padding: 25px;"><h3>ESITO: ${status}</h3><p>AGENTE: ${userName}</p><p>PUNTEGGIO: ${score}/${total} (${percent}%)</p></div>`;
-    await sendToDiscord(userName, score, percent, status, examType);
+    
+    document.getElementById('score-display').innerHTML = `
+        <div style="border: 1px solid ${pts >= 15 ? 'var(--success-green)' : 'var(--error-red)'}; padding: 25px; background: rgba(0,0,0,0.3);">
+            <h3 style="color: ${pts >= 15 ? 'var(--success-green)' : 'var(--error-red)'};">ESITO: ${stat}</h3>
+            <p>AGENTE: ${userName}</p>
+            <p>PUNTEGGIO: ${pts}/${total} (${perc}%)</p>
+            <p style="font-size: 0.8rem; margin-top: 15px; opacity: 0.7;">I dati sono stati inviati al database centrale LSPD.</p>
+        </div>`;
 }
 
 async function sendToDiscord(user, pts, perc, stat, type) {
     let color = stat === "IDONEO" ? 3066993 : 15158332;
     if (stat.includes("ANNULLATO")) color = 8355711;
-    const payload = { embeds: [{ title: `📋 RAPPORTO LSPD - ${type}`, color: color, fields: [{ name: "👤 Agente", value: `\`${user}\``, inline: true }, { name: "⚖️ Verdetto", value: `**${stat}**`, inline: true }, { name: "📊 Risultato", value: `Punti: ${pts}/${currentQuestionsDB.length} (${perc}%)` }], timestamp: new Date().toISOString() }] };
-    try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); } catch (e) {}
+
+    const payload = {
+        embeds: [{
+            title: `📋 RAPPORTO LSPD - ${type}`,
+            color: color,
+            fields: [
+                { name: "👤 Agente", value: `\`${user}\``, inline: true },
+                { name: "⚖️ Verdetto", value: `**${stat}**`, inline: true },
+                { name: "📊 Risultato", value: `Punti: ${pts}/${currentQuestionsDB.length} (${perc}%)` }
+            ],
+            footer: { 
+                text: "LSPD - Sistema Corsi" 
+            },
+            timestamp: new Date().toISOString()
+        }]
+    };
+
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.error("Errore invio report principale");
+    }
+}
+
+async function sendDetailedToDiscord(user, pts, report, type, durata) {
+    const payload = {
+        embeds: [{
+            title: `🔍 REVISIONE ISTRUTTORI - ${user}`,
+            color: 3447003,
+            description: report,
+            fields: [
+                { name: "📋 Tipo Esame", value: type, inline: true },
+                { name: "⏱️ Durata", value: durata, inline: true },
+                { name: "📊 Esito", value: `${pts}/${currentQuestionsDB.length}`, inline: true }
+            ],
+            footer: { text: "LSPD - Sistema Corsi" },
+            timestamp: new Date().toISOString()
+        }]
+    };
+    try {
+        await fetch(WEBHOOK_DETTAGLI_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    } catch (e) { console.error("Errore invio dettagli"); }
 }
 
 function finalLogout() {
@@ -252,4 +391,4 @@ function finalLogout() {
     location.reload();
 }
 
-window.onbeforeunload = () => { if (isExamStarted) return "Il test verrà annullato!"; };cancelBriefing
+window.onbeforeunload = () => { if (isExamStarted) return "Il test verrà annullato!"; };

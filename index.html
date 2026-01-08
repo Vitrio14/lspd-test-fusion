@@ -138,5 +138,16 @@
             </span>
         </div>
     </footer>
+
+    <div id="review-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="border-color: var(--gold) !important;">
+        <h2 style="color: var(--gold);">CONFERMA INVIO</h2>
+        <p style="margin: 20px 0;">Hai revisionato tutte le risposte? Una volta inviato, il test verrà corretto e non potrai più tornare indietro.</p>
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button class="btn-primary" style="background: var(--success-green) !important;" onclick="submitExam()">SÌ, INVIA TEST</button>
+            <button class="btn-primary" onclick="closeReviewModal()">TORNA AL TEST</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

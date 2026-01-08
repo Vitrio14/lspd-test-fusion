@@ -279,3 +279,50 @@ body {
     50% { opacity: 0.5; filter: brightness(1.5); }
     100% { opacity: 1; filter: brightness(1); }
 }
+
+.option.selected {
+    background: var(--main-blue) !important;
+    color: white !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 15px var(--glow-blue);
+}
+/* --- NAVIGAZIONE RAPIDA DOMANDE --- */
+.q-dot {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 114, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.q-dot.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+    background: rgba(255, 204, 0, 0.1);
+}
+
+.q-dot.completed {
+    border-color: var(--main-blue);
+    color: var(--main-blue);
+    background: rgba(0, 114, 255, 0.1);
+}
+
+.q-dot:hover {
+    background: var(--main-blue);
+    color: white;
+}
+
+/* --- RISPOSTA SELEZIONATA --- */
+.option.selected {
+    background: var(--main-blue) !important;
+    color: white !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 15px var(--glow-blue);
+}

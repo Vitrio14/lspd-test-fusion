@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD - Terminale Operativo Fusion Eternal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;500&display=swap" rel="stylesheet">
+</head>
+<body oncontextmenu="return false;"> <div class="scanline"></div>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="status-indicator">
+                <span class="blink-dot"></span>
+                <span>SISTEMA CRITTOGRAFATO LSPD</span>
+            </div>
+            <div id="exam-timer" class="timer-alert hidden">TEMPO RIMASTO: 30:00</div>
+            <div id="clock">00:00:00</div>
+        </header>
+
+        <div id="main-content" class="container hidden">
+            <div class="terminal-header">
+                <img src="logo.png" class="logo" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
+                <div class="header-text">
+                    <h1>ACCADEMIA POLIZIA</h1>
+                    <p>SESSIONE ESAME TEORICO - LIVELLO 1</p>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div id="progress-bar"></div>
+            </div>
+            
+            <div id="quiz-box"></div>
+
+            <div id="result" class="hidden">
+                <h2 class="glow-text">SESSIONE COMPLETATA</h2>
+                <div id="score-display"></div>
+                <button class="btn-primary" onclick="location.reload()">CHIUDI SESSIONE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="nameModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-decor"></div>
+            <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
+            
+            <div id="auth-section">
+                <h2>ACCESSO OPERATIVO</h2>
+                <p>Inserire credenziali ministeriali per sbloccare il terminale</p>
+                
+                <div class="auth-fields">
+                    <input type="email" id="loginEmail" placeholder="EMAIL AGENTE" autocomplete="email">
+                    <input type="password" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password">
+                </div>
+
+                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA LOGIN</button>
+            </div>
+
+            <div id="rp-section" class="hidden">
+                <h2>IDENTIFICAZIONE AGENTE - REGISTRAZIONE ESAME</h2>
+                <p>Inserire Nome e Cognome</p>
+                
+                <div class="auth-fields">
+                    <input type="text" id="rpName" placeholder="ES: MARIO ROSSI" autocomplete="off">
+                </div>
+
+                <button class="btn-primary" onclick="confirmIdentity()">AVVIA PROTOCOLLO TEST</button>
+            </div>
+            
+            <div id="authError" class="error-msg"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>

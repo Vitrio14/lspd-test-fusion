@@ -16,7 +16,7 @@ const auth = firebase.auth();
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1458876750787379344/83gIBufwxzVTqQXYkojqCCTXeFSwAZdrvWqAYnAUeypYCJnwAM9sYl-cbKeuC0EsmHBm"; 
 
 // --- DATABASE DOMANDE ---
-const questions = [
+const questionsRecluta = [
     { q: "In una pattuglia ADAM, quale ruolo ricopre l'agente seduto sul lato passeggero?", options: ["Guidatore", "Capo Pattuglia", "Addetto ai prigionieri", "Supporto tattico"], correct: 1 },
     { q: "Qual è il grado minimo richiesto per una pattuglia LINCOLN senza necessità di permessi?", options: ["Agente I", "Agente II", "Agente Scelto", "Sergente"], correct: 3 },
     { q: "Quante ADAM devono essere attive per autorizzare una pattuglia MARY (Moto)?", options: ["Almeno 2", "Almeno 3", "Almeno 4", "Almeno 5"], correct: 2 },
@@ -39,18 +39,38 @@ const questions = [
     { q: "Qual è lo STATUS radio che indica che una pattuglia è in rifornimento o riparazione?", options: ["STATUS 1", "STATUS 2", "STATUS 3", "STATUS 4"], correct: 2 }
 ];
 
+const questionsSergente = [
+    { q: "In qualità di supervisore, un'unità ADAM richiede il supporto per un 10-80 ad alta velocità. Qual è la tua priorità?", options: ["Prendere il comando radio e coordinare", "Inseguire personalmente", "Autorizzare il PIT subito", "Chiedere il modello auto"], correct: 0 },
+    { q: "Durante un conflitto a fuoco, un Agente è a terra. Cosa impone il protocollo sotto fuoco?", options: ["Rianimarlo subito", "Neutralizzare la minaccia prima dei soccorsi", "Aspettare i medici senza fare nulla", "Trasportarlo via mentre sparano"], correct: 1 },
+    { q: "Un cittadino lamenta un abuso di potere da un Agente I. Come procedi?", options: ["Ignori il civile", "Sospendi l'agente subito", "Raccogli prove e apri rapporto disciplinare", "Dai ragione all'agente"], correct: 2 },
+    { q: "Differenza tra DEFCON 2 e DEFCON 3?", options: ["Il 2 riguarda solo rapine", "Il 2 indica pericolo critico (approvazione Governatore)", "Nessuna", "Il 3 è più grave"], correct: 1 },
+    { q: "Soggetto barricato con ostaggio. Ruolo del Sergente?", options: ["Irrompere da solo", "Perimetro, negoziazione e attesa SWAT/Specialisti", "Sparare alle vetrine", "Ordinare il fuoco libero"], correct: 1 },
+    { q: "Cosa definisce la 'Catena di Custodia'?", options: ["L'arresto", "Documentazione cronologica per integrità prove", "Trasporto detenuti", "Gradi della pattuglia"], correct: 1 },
+    { q: "Un'unità LINCOLN può operare in zone rosse (alto rischio)?", options: ["Sì, sempre", "No, serve supporto o integrazione in ADAM", "Solo con fucile", "Solo di giorno"], correct: 1 },
+    { q: "Logica: Sospetto in vicolo cieco. Posizionamento volanti?", options: ["Tutte dentro il vicolo", "A 'V' (tappo) all'uscita del vicolo", "Affiancate al sospetto", "Lontano dal vicolo"], correct: 1 },
+    { q: "Subordinato non rispetta protocollo radio. Azione correttiva?", options: ["Urla via radio", "Richiamo privato e poi rapporto scritto", "Ignora", "Licenziamento subito"], correct: 1 },
+    { q: "Quando è giustificata la forza letale (Codice 4)?", options: ["Sospetto scappa a piedi", "Minaccia attiva alla vita con armi", "Insulti all'agente", "Furto d'auto"], correct: 1 },
+    { q: "Obiettivo 'Air Support' (Elicottero)?", options: ["Sparare", "Visuale costante e coordinamento unità terra", "Trasporto", "Rifornimento"], correct: 1 },
+    { q: "Sospetto dichiara vizio di forma e chiede rilascio. Cosa fai?", options: ["Lo rilasci", "Verifichi diritti e prosegui (deciderà il Giudice)", "Lo minacci", "Sequestri il telefono"], correct: 1 },
+    { q: "Differenza tra Furto e Rapina?", options: ["Nessuna", "Furto senza violenza, Rapina con violenza/minaccia", "Rapina solo in banca", "Furto solo di notte"], correct: 1 },
+    { q: "Regola d'oro negoziazione ostaggi?", options: ["Promettere tutto", "Mai scambiare ostaggio con agenti o armi", "Arrendersi", "Entrare mentre si parla"], correct: 1 },
+    { q: "Chi coordina i rinforzi in una fuga a piedi nei boschi?", options: ["L'agente che corre", "Il grado più alto sul posto", "La centrale", "Nessuno"], correct: 1 },
+    { q: "Cosa sono le 'Joint Operations'?", options: ["Operazioni tra diverse agenzie (LSPD/FIB)", "Pattuglia a due", "Turno notturno", "Adunata"], correct: 0 },
+    { q: "Uso eccessivo del Taser da parte di un subordinato. Intervento?", options: ["Ti complimenti", "Segnali l'abuso e apri indagine interna", "Ignori", "Usi il taser anche tu"], correct: 1 },
+    { q: "Velocità Codice 2?", options: ["Senza limiti", "Crociera rispettando il codice stradale", "Fissa 100km/h", "Sempre 200km/h"], correct: 1 },
+    { q: "Il Sergente può autorizzare armamento pesante?", options: ["Sì, se la situazione lo richiede (conflitto a fuoco)", "No, mai", "Solo il Governatore", "Solo in caserma"], correct: 0 },
+    { q: "Cosa si intende per 'Perimetro Tattico'?", options: ["Stare alla porta", "Isolare l'area impedendo accessi/uscite", "Entrare subito", "Fare foto"], correct: 1 }
+];
+
 // --- VARIABILI GLOBALI ---
+let currentQuestionsDB = [];
 let currentQuestion = 0;
 let score = 0;
 let userName = "";
+let examType = "";
 let timeLeft = 1800; 
 let timerInterval;
 let isExamStarted = false;
-
-// Impedisce la chiusura accidentale durante il test
-window.onbeforeunload = function() {
-    if (isExamStarted) return "Il progresso del test andrà perduto. Sei sicuro?";
-};
 
 // Orologio tempo reale
 function updateClock() {
@@ -73,7 +93,6 @@ function handleLogin() {
 
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-            // Successo: Passa alla schermata Nome RP
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('rp-section').classList.remove('hidden');
             errorDiv.innerText = "";
@@ -85,12 +104,24 @@ function handleLogin() {
         });
 }
 
-// --- STEP 2: CONFERMA IDENTITÀ RP ---
+// --- STEP 2: NOME RP ---
 function confirmIdentity() {
     const nameInput = document.getElementById('rpName').value;
     if (nameInput.trim().length < 5) return alert("Inserire Nome e Cognome RP validi!");
 
     userName = nameInput.trim().toUpperCase();
+    document.getElementById('rp-section').classList.add('hidden');
+    document.getElementById('course-section').classList.remove('hidden');
+}
+
+// --- STEP 3: SELEZIONE E AVVIO ESAME ---
+function selectExam(type) {
+    examType = type === 'recluta' ? "RECLUTA / CADETTO" : "SERGENTE";
+    currentQuestionsDB = type === 'recluta' ? questionsRecluta : questionsSergente;
+    
+    // Aggiorna titoli nell'interfaccia
+    document.getElementById('exam-title-display').innerText = `ESAME ${examType}`;
+    
     document.getElementById('nameModal').classList.add('hidden');
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('exam-timer').classList.remove('hidden');
@@ -124,15 +155,15 @@ function startTimer() {
 // --- LOGICA QUIZ ---
 function loadQuestion() {
     const quizBox = document.getElementById('quiz-box');
-    const qData = questions[currentQuestion];
+    const qData = currentQuestionsDB[currentQuestion];
     const progressBar = document.getElementById('progress-bar');
     
     if (progressBar) {
-        progressBar.style.width = (currentQuestion / questions.length * 100) + "%";
+        progressBar.style.width = (currentQuestion / currentQuestionsDB.length * 100) + "%";
     }
 
     quizBox.innerHTML = `
-        <h3>PROTOCOLLO ESAME: DOMANDA ${currentQuestion + 1} / ${questions.length}</h3>
+        <h3>DOMANDA ${currentQuestion + 1} / ${currentQuestionsDB.length}</h3>
         <p>${qData.q}</p>
         <div class="options-list">
             ${qData.options.map((opt, i) => `
@@ -143,10 +174,10 @@ function loadQuestion() {
 }
 
 function checkAnswer(idx) {
-    if (idx === questions[currentQuestion].correct) score++;
+    if (idx === currentQuestionsDB[currentQuestion].correct) score++;
     currentQuestion++;
     
-    if (currentQuestion < questions.length) {
+    if (currentQuestion < currentQuestionsDB.length) {
         loadQuestion();
     } else {
         clearInterval(timerInterval);
@@ -160,38 +191,41 @@ function showResults() {
     document.getElementById('result').classList.remove('hidden');
     document.getElementById('exam-timer').classList.add('hidden');
 
-    const percent = Math.round((score / questions.length) * 100);
-    const status = percent >= 75 ? "IDONEO" : "NON IDONEO";
+    const total = currentQuestionsDB.length;
+    const percent = Math.round((score / total) * 100);
+    
+    // Soglia Sergente 90%, Recluta 75%
+    const threshold = examType === "SERGENTE" ? 90 : 75;
+    const status = percent >= threshold ? "IDONEO" : "NON IDONEO";
     
     document.getElementById('score-display').innerHTML = `
         <div class="result-box">
             <p>OPERATORE: ${userName}</p>
-            <p>PUNTEGGIO: ${score}/20 (${percent}%)</p>
-            <p>ERRORI: ${20 - score}</p>
-            <p>ESITO: <span style="color: ${percent >= 75 ? '#4CAF50' : '#f44336'}">${status}</span></p>
+            <p>ESAME: ${examType}</p>
+            <p>PUNTEGGIO: ${score}/${total} (${percent}%)</p>
+            <p>ESITO: <span style="color: ${percent >= threshold ? '#4CAF50' : '#ff4444'}">${status}</span></p>
         </div>
     `;
     
-    sendToDiscord(userName, score, percent, status);
+    sendToDiscord(userName, score, percent, status, examType);
 }
 
 // --- INVIO DISCORD ---
-async function sendToDiscord(user, pts, perc, stat) {
+async function sendToDiscord(user, pts, perc, stat, type) {
     if(!WEBHOOK_URL.startsWith("https")) return;
     
     const timeSpent = 30 - Math.floor(timeLeft / 60);
     const payload = {
         embeds: [{
-            title: "📢 ESITO TEST ACCADEMIA LSPD",
+            title: `📢 ESITO TEST: ${type}`,
             color: stat === "IDONEO" ? 3066993 : 15158332,
             fields: [
                 { name: "Candidato", value: user, inline: true },
                 { name: "Esito", value: stat, inline: true },
                 { name: "Punteggio", value: `${pts}/20 (${perc}%)` },
-                { name: "Errori commessi", value: `${20 - pts}`, inline: true },
-                { name: "Tempo impiegato", value: `${timeSpent} minuti` }
+                { name: "Tempo impiegato", value: `${timeSpent} minuti`, inline: true }
             ],
-            footer: { text: "Terminale Centrale LSPD - Fusion Eternal" },
+            footer: { text: "Sistema LSPD Fusion Eternal - Terminale Centrale" },
             timestamp: new Date()
         }]
     };
@@ -206,3 +240,8 @@ async function sendToDiscord(user, pts, perc, stat) {
         console.error("Errore Webhook:", err);
     }
 }
+
+// Blocco chiusura accidentale
+window.onbeforeunload = function() {
+    if (isExamStarted) return "Uscendo perderai i progressi. Confermi?";
+};

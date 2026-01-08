@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSPD - Terminale Operativo Fusion Eternal</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;500&display=swap" rel="stylesheet">
 </head>
-<body oncontextmenu="return false;"> <div class="scanline"></div>
+<body oncontextmenu="return false;"> 
+    <div class="scanline"></div>
 
     <div class="main-wrapper">
         <header class="top-bar">
@@ -23,8 +25,8 @@
             <div class="terminal-header">
                 <img src="logo.png" class="logo" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
                 <div class="header-text">
-                    <h1>ACCADEMIA POLIZIA</h1>
-                    <p>SESSIONE ESAME TEORICO - LIVELLO 1</p>
+                    <h1 id="exam-title-display">ACCADEMIA POLIZIA DI LOS SANTOS</h1>
+                    <p id="exam-subtitle-display">SESSIONE ESAME TEORICO</p>
                 </div>
             </div>
 
@@ -37,7 +39,7 @@
             <div id="result" class="hidden">
                 <h2 class="glow-text">SESSIONE COMPLETATA</h2>
                 <div id="score-display"></div>
-                <button class="btn-primary" onclick="location.reload()">CHIUDI SESSIONE</button>
+                <button class="btn-primary" onclick="location.reload()">CHIUDI SESSIONE / LOGOUT</button>
             </div>
         </div>
     </div>
@@ -49,25 +51,36 @@
             
             <div id="auth-section">
                 <h2>ACCESSO OPERATIVO</h2>
-                <p>Inserire credenziali ministeriali per sbloccare il terminale</p>
-                
+                <p>Inserire credenziali ministeriali</p>
                 <div class="auth-fields">
                     <input type="email" id="loginEmail" placeholder="EMAIL AGENTE" autocomplete="email">
                     <input type="password" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password">
                 </div>
-
                 <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA LOGIN</button>
             </div>
 
             <div id="rp-section" class="hidden">
-                <h2>IDENTIFICAZIONE AGENTE - REGISTRAZIONE ESAME</h2>
-                <p>Inserire Nome e Cognome</p>
-                
+                <h2>IDENTIFICAZIONE RP</h2>
+                <p>Inserire Nome e Cognome del personaggio</p>
                 <div class="auth-fields">
                     <input type="text" id="rpName" placeholder="ES: MARIO ROSSI" autocomplete="off">
                 </div>
+                <button class="btn-primary" onclick="confirmIdentity()">CONFERMA IDENTITÀ</button>
+            </div>
 
-                <button class="btn-primary" onclick="confirmIdentity()">AVVIA PROTOCOLLO TEST</button>
+            <div id="course-section" class="hidden">
+                <h2>PROTOCOLLI DISPONIBILI</h2>
+                <p>Selezionare il test da sostenere:</p>
+                <div class="course-grid">
+                    <button class="btn-course" onclick="selectExam('recluta')">
+                        <span class="rank">RECLUTA / CADETTO</span>
+                        <span class="desc">Accesso Livello 1 - Procedure Base</span>
+                    </button>
+                    <button class="btn-course" onclick="selectExam('sergente')">
+                        <span class="rank">PROMOZIONE AL GRADO SERGENTE</span>
+                        <span class="desc">Livello Avanzato - Comando e Logica</span>
+                    </button>
+                </div>
             </div>
             
             <div id="authError" class="error-msg"></div>
@@ -78,5 +91,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <script src="script.js"></script>
+
+<footer class="terminal-footer">
+    <div class="footer-content">
+        <span class="copyright">© 2026 LOS SANTOS POLICE DEPARTMENT - FUSION ETERNAL</span>
+    </div>
+</footer>
+</footer>
 </body>
 </html>

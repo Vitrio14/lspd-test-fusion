@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSPD - Terminale Operativo Fusion Eternal</title>
+    <title>LSPD - Terminale Esami</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body oncontextmenu="return false;"> 
+    
     <div id="notification-container"></div>
+    
     <div class="scanline"></div>
 
     <div class="main-wrapper">
@@ -19,15 +21,15 @@
                 <span>SISTEMA CRITTOGRAFATO LSPD</span>
             </div>
 
-            <button id="abort-btn" class="btn-abort hidden" onclick="confirmAbort()">ANNULLA TEST</button>
+            <button id="abort-btn" class="btn-primary hidden" style="width: auto; padding: 5px 15px !important; font-size: 0.7rem; background: var(--error-red) !important;" onclick="confirmAbort()">ANNULLA TEST</button>
             
-            <div id="exam-timer" class="timer-alert hidden">TEMPO RIMASTO: 30:00</div>
+            <div id="exam-timer" class="timer-alert hidden">TEMPO: 30:00</div>
             <div id="clock">00:00:00</div>
         </header>
 
         <div id="main-content" class="container hidden">
             <div class="terminal-header">
-                <img src="logo.png" class="logo" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
+                <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
                 <div class="header-text">
                     <h1 id="exam-title-display">ACCADEMIA POLIZIA DI LOS SANTOS</h1>
                     <p id="exam-subtitle-display">SESSIONE ESAME TEORICO</p>
@@ -35,7 +37,7 @@
             </div>
 
             <div class="progress-wrapper">
-                <div id="progress-bar" style="height: 4px; background: var(--main-blue); width: 0%; transition: 0.3s; box-shadow: 0 0 10px var(--main-blue);"></div>
+                <div id="progress-bar"></div>
             </div>
             
             <div id="quiz-box" style="margin-top: 30px;">
@@ -50,28 +52,27 @@
 
         <div id="briefing-section" class="container hidden">
             <div class="terminal-header">
-                <img src="logo.png" class="logo" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
+                <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
                 <div class="header-text">
                     <h1 id="briefing-title">BRIEFING OPERATIVO</h1>
                 </div>
             </div>
             
-            <div class="result-box">
+            <div class="result-box" style="background: rgba(0,0,0,0.4); padding: 20px; border: 1px solid rgba(0,114,255,0.2);">
                 <p style="color: var(--gold); margin-bottom: 15px; font-weight: bold; font-family: var(--header-font);">⚠️ PROTOCOLLO DI VALUTAZIONE</p>
                 <p>Il sistema sta per inizializzare i dati. Una volta confermato l'avvio, il timer non potrà essere messo in pausa.</p>
                 
                 <p style="margin-top: 20px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">REGOLE D'INGAGGIO:</p>
                 <ul style="list-style: none; padding-left: 10px; margin-top: 10px; line-height: 1.8;">
                     <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Analisi critica di ogni quesito operativo.</li>
-                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Divieto assoluto di ausili esterni (Codici o suggerimenti).</li>
-                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il mancato superamento richiede tempo di attesa per il re-test.</li>
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Divieto assoluto di ausili esterni.</li>
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il mancato superamento richiede tempo di attesa.</li>
                 </ul>
-                <p style="margin-top: 25px; font-style: italic; color: #666; font-size: 0.8rem; text-align: center;">"Obedience to the law is freedom."</p>
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
                 <button class="btn-primary" onclick="startFinalExam()">INIZIA ESAME</button>
-                <p class="back-link" style="margin-top: 20px;" onclick="cancelBriefing()">← TORNA ALLA SELEZIONE</p>
+                <p class="back-link" style="margin-top: 20px; cursor:pointer; color: var(--main-blue);" onclick="cancelBriefing()">← TORNA ALLA SELEZIONE</p>
             </div>
         </div>
     </div>
@@ -81,45 +82,44 @@
             <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
             
             <div id="auth-section">
-                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">ACCESSO OPERATIVO</h2>
-                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Inserire credenziali Agente</p>
-                <input type="email" id="loginEmail" placeholder="EMAIL DI SERVIZIO" autocomplete="email">
-                <input type="password" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password">
-                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA LOGIN</button>
+                <h2 style="margin-top:10px;">ACCESSO SESSIONE CORSI</h2>
+                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Inserire le credenziali fornite dal dipartimento</p>
+                <input type="email" id="loginEmail" placeholder="EMAIL DI SERVIZIO" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white;">
+                <input type="password" id="loginPassword" placeholder="PASSWORD" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white;">
+                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA IL LOGIN</button>
             </div>
 
             <div id="rp-section" class="hidden">
-                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">IDENTIFICAZIONE</h2>
+                <h2>IDENTIFICAZIONE</h2>
                 <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Specificare Nome e Cognome RP</p>
-                <input type="text" id="rpName" placeholder="ES: MARCO ROSSI" autocomplete="off">
+                <input type="text" id="rpName" placeholder="ES: MARCO ROSSI" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white; text-transform: uppercase;">
                 <button class="btn-primary" onclick="confirmIdentity()">CONFERMA IDENTITÀ</button>
-                <p class="back-link" style="color: #666; margin-top: 15px;" onclick="location.reload()">← RESET SESSIONE</p>
+                <p class="back-link" style="color: #666; margin-top: 15px; cursor:pointer;" onclick="finalLogout()">← RESET SESSIONE</p>
             </div>
 
             <div id="course-section" class="hidden">
-                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">PROTOCOLLI</h2>
-                <div class="course-grid">
+                <h2>PROTOCOLLI DISPONIBILI</h2>
+                <div class="course-grid" style="margin-top: 20px;">
                     <button class="btn-course" onclick="selectExam('recluta')">
-                        <span class="rank">RECLUTA / CADETTO</span>
-                        <span class="desc">VALUTAZIONE PROCEDURE DI BASE</span>
+                        <strong class="rank" style="color: var(--main-blue);">RECLUTA / CADETTO</strong><br>
+                        <small class="desc" style="opacity: 0.7;">VALUTAZIONE PROCEDURE DI BASE</small>
                     </button>
                     <button class="btn-course" onclick="selectExam('sergente')">
-                        <span class="rank">PROMOZIONE SERGENTE</span>
-                        <span class="desc">PROTOCOLLI DI COMANDO E COORDINAMENTO</span>
+                        <strong class="rank" style="color: var(--main-blue);">PROMOZIONE SERGENTE</strong><br>
+                        <small class="desc" style="opacity: 0.7;">PROTOCOLLI DI COMANDO</small>
                     </button>
                 </div>
-                <p class="back-link" style="color: var(--gold); margin-top: 15px;" onclick="backToName()">← MODIFICA IDENTITÀ</p>
+                <p class="back-link" style="color: var(--gold); margin-top: 20px; cursor:pointer;" onclick="backToName()">← MODIFICA IDENTITÀ</p>
             </div>
         </div>
     </div>
 
     <div id="abort-modal" class="modal-overlay hidden">
-        <div class="modal-box" style="border-color: var(--error-red);">
-            <h2 style="color: var(--error-red); font-family: var(--header-font);">⚠️ ATTENZIONE ⚠️</h2>
-            <p style="margin: 20px 0;">L'annullamento forzato verrà registrato nel database come **FALLIMENTO**.</p>
-            <p><strong>Vuoi davvero procedere?</strong></p>
+        <div class="modal-box" style="border-color: var(--error-red) !important;">
+            <h2 style="color: var(--error-red);">⚠️ ATTENZIONE ⚠️</h2>
+            <p style="margin: 20px 0;">L'annullamento forzato verrà registrato come <br><strong style="color: var(--error-red);">OPERAZIONE FALLITA</strong>.</p>
             <div style="display: flex; gap: 15px; margin-top: 30px;">
-                <button class="btn-primary" style="background: var(--error-red); box-shadow: 0 4px 0 #900;" onclick="abortExam()">SÌ, ANNULLA</button>
+                <button class="btn-primary" style="background: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,68,68,0.4) !important;" onclick="abortExam()">SÌ, ANNULLA</button>
                 <button class="btn-primary" onclick="closeAbortModal()">NO, CONTINUA</button>
             </div>
         </div>
@@ -127,11 +127,15 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
     <script src="script.js"></script>
 
-    <footer class="terminal-footer">
-        <div class="footer-content">
-            <span class="copyright">© 2026 LOS SANTOS POLICE DEPARTMENT - PROTOCOLLO FUSION ETERNAL</span>
+<footer class="terminal-footer">
+        <div class="footer-bar">
+            <span class="copyright">
+                <span class="status-node">●</span> 
+                © 2026 LOS SANTOS POLICE DEPARTMENT — PROTOCOLLO FUSION ETERNAL
+            </span>
         </div>
     </footer>
 </body>

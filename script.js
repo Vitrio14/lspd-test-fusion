@@ -31,37 +31,40 @@ const questionsRecluta = [
     { q: "Qual è la velocità massima consentita per eseguire una manovra PIT in sicurezza?", options: ["Inferiore a 80 km/h", "Inferiore a 100 km/h", "Inferiore a 120 km/h", "Senza limiti"], correct: 2 },
     { q: "In quale caso l'agente può agire senza mandato (Probable Cause)?", options: ["Sempre se ha un sospetto", "Se ritiene ragionevolmente che la persona sia colpevole di un crimine", "Solo su ordine del comando", "Solo se il soggetto ha precedenti"], correct: 1 },
     { q: "Chi può emanare o approvare lo stato di DEFCON 2?", options: ["Qualsiasi Agente", "Sergente o superiore", "Procuratore Generale o Governatore", "Solo il Governatore"], correct: 2 },
-    { q: "Quale manovra BOX prevede l'ausilio di una struttura (es. muro) come blocco?", options: ["Box a I", "Box a T", "Box a Muro", "Box a Sandwich"], correct: 2 },
+    { q: "Quale manovra BOX prevede l'ausilio di una struttura come blocco?", options: ["Box a I", "Box a T", "Box a Muro", "Box a Sandwich"], correct: 2 },
     { q: "Cosa indica lo stato di DEFCON 1?", options: ["Rifornimento centrali", "Guerre civili o colpi di stato", "Inseguimento alto rischio", "Rapina in corso"], correct: 1 },
-    { q: "Cosa si intende per 'Paralleling' durante un inseguimento?", options: ["Speronare lateralmente", "Posizionarsi su strade parallele per anticipare il sospetto", "Inseguimento a luci spente", "Blocco stradale"], correct: 1 },
-    { q: "Come deve rispondere la pattuglia si chiamata in CODICE 3?", options: ["Senza sirene rispettando il codice", "Solo lampeggianti e limiti di velocità", "Lampeggianti e sirene senza rispettare i codici stradali", "Solo se autorizzata dal comando"], correct: 2 },
+    { q: "Qual è la regola fondamentale sull’uso della radio di servizio?", options: ["Parlare liberamente", "Cambiare canale se necessario", "Usare solo il canale assegnato", "Rispondere sempre al centralino"], correct: 2 },
+    { q: "Come deve rispondere la pattuglia se chiamata in CODICE 3?", options: ["Senza sirene rispettando il codice", "Solo lampeggianti e limiti di velocità", "Lampeggianti e sirene senza rispettare i codici stradali", "Solo se autorizzata dal comando"], correct: 2 },
     { q: "Entro quanto tempo deve essere inoltrato il rapporto dopo un arresto?", options: ["Immediatamente", "Entro massimo un'ora", "Entro due ore", "Entro fine turno"], correct: 1 },
     { q: "Chi ha l'autorità per approvare il DEFCON 3?", options: ["Qualsiasi Supervisore", "Governatore", "Procuratore Generale o Alto Comando", "Sergente"], correct: 2 },
     { q: "Qual è lo STATUS radio che indica che una pattuglia è in rifornimento o riparazione?", options: ["STATUS 1", "STATUS 2", "STATUS 3", "STATUS 4"], correct: 2 }
 ];
 
+
 const questionsSergente = [
-    { q: "In qualità di supervisore, un'unità ADAM richiede il supporto per un 10-80 ad alta velocità. Qual è la tua priorità?", options: ["Prendere il comando radio e coordinare", "Inseguire personalmente", "Autorizzare il PIT subito", "Chiedere il modello auto"], correct: 0 },
-    { q: "Durante un conflitto a fuoco, un Agente è a terra. Cosa impone il protocollo sotto fuoco?", options: ["Rianimarlo subito", "Neutralizzare la minaccia prima dei soccorsi", "Aspettare i medici senza fare nulla", "Trasportarlo via mentre sparano"], correct: 1 },
-    { q: "Un cittadino lamenta un abuso di potere da un Agente I. Come procedi?", options: ["Ignori il civile", "Sospendi l'agente subito", "Raccogli prove e apri rapporto disciplinare", "Dai ragione all'agente"], correct: 2 },
-    { q: "Differenza tra DEFCON 2 e DEFCON 3?", options: ["Il 2 riguarda solo rapine", "Il 2 indica pericolo critico (approvazione Governatore)", "Nessuna", "Il 3 è più grave"], correct: 1 },
-    { q: "Soggetto barricato con ostaggio. Ruolo del Sergente?", options: ["Irrompere da solo", "Perimetro, negoziazione e attesa SWAT/Specialisti", "Sparare alle vetrine", "Ordinare il fuoco libero"], correct: 1 },
-    { q: "Cosa definisce la 'Catena di Custodia'?", options: ["L'arresto", "Documentazione cronologica per integrità prove", "Trasporto detenuti", "Gradi della pattuglia"], correct: 1 },
-    { q: "Un'unità LINCOLN può operare in zone rosse (alto rischio)?", options: ["Sì, sempre", "No, serve supporto o integrazione in ADAM", "Solo con fucile", "Solo di giorno"], correct: 1 },
-    { q: "Logica: Sospetto in vicolo cieco. Posizionamento volanti?", options: ["Tutte dentro il vicolo", "A 'V' (tappo) all'uscita del vicolo", "Affiancate al sospetto", "Lontano dal vicolo"], correct: 1 },
-    { q: "Subordinato non rispetta protocollo radio. Azione correttiva?", options: ["Urla via radio", "Richiamo privato e poi rapporto scritto", "Ignora", "Licenziamento subito"], correct: 1 },
-    { q: "Quando è giustificata la forza letale (Codice 4)?", options: ["Sospetto scappa a piedi", "Minaccia attiva alla vita con armi", "Insulti all'agente", "Furto d'auto"], correct: 1 },
-    { q: "Obiettivo 'Air Support' (Elicottero)?", options: ["Sparare", "Visuale costante e coordinamento unità terra", "Trasporto", "Rifornimento"], correct: 1 },
-    { q: "Soggetto dichiara vizio di forma e chiede rilascio. Cosa fai?", options: ["Lo rilasci", "Verifichi diritti e prosegui (deciderà il Giudice)", "Lo minacci", "Sequestri il telefono"], correct: 1 },
-    { q: "Differenza tra Furto e Rapina?", options: ["Nessuna", "Furto senza violenza, Rapina con violenza/minaccia", "Rapina solo in banca", "Furto solo di notte"], correct: 1 },
-    { q: "Regola d'oro negoziazione ostaggi?", options: ["Promettere tutto", "Mai scambiare ostaggio con agenti o armi", "Arrendersi", "Entrare mentre si parla"], correct: 1 },
-    { q: "Chi coordina i rinforzi in una fuga a piedi nei boschi?", options: ["L'agente che corre", "Il grado più alto sul posto", "La centrale", "Nessuno"], correct: 1 },
-    { q: "Cosa sono le 'Joint Operations'?", options: ["Operazioni tra diverse agenzie (LSPD/FIB)", "Pattuglia a due", "Turno notturno", "Adunata"], correct: 0 },
-    { q: "Uso eccessivo del Taser da parte di un subordinato. Intervento?", options: ["Ti complimenti", "Segnali l'abuso e apri indagine interna", "Ignori", "Usi il taser anche tu"], correct: 1 },
-    { q: "Velocità Codice 2?", options: ["Senza limiti", "Crociera rispettando il codice stradale", "Fissa 100km/h", "Sempre 200km/h"], correct: 1 },
-    { q: "Il Sergente può autorizzare armamento pesante?", options: ["Sì, se la situazione lo richiede (conflitto a fuoco)", "No, mai", "Solo il Governatore", "Solo in caserma"], correct: 0 },
-    { q: "Cosa si intende per 'Perimetro Tattico'?", options: ["Stare alla porta", "Isolare l'area impedendo accessi/uscite", "Entrare subito", "Fare foto"], correct: 1 }
+    { q: "In presenza di un coordinatore radio, quale deve essere il comportamento di un Sergente sul campo?", options: ["Limitarsi a ricevere informazioni", "Coordinare solo la propria pattuglia", "Seguire e far rispettare gli ordini del coordinatore", "Agire in autonomia per rapidità operativa"], correct: 2 },
+    { q: "Chi ha la responsabilità finale durante una Joint Operation interforze?", options: ["Il responsabile dell’agenzia capofila", "Il coordinatore radio", "Il grado più alto presente", "Il comando centrale"], correct: 2 },
+    { q: "Quando un fermo si trasforma legalmente in arresto?", options: ["Al termine del tempo massimo del fermo", "Quando emergono prove o flagranza", "Quando il soggetto viene portato in centrale", "Alla lettura del Miranda Warning"], correct: 1 },
+    { q: "Qual è la priorità di un Sergente durante un 10-10 (conflitto a fuoco)?", options: ["Supportare direttamente gli agenti in prima linea", "Mettere in sicurezza la propria unità", "Coordinare unità e neutralizzare la minaccia", "Richiedere rinforzi e attendere"], correct: 2 },
+    { q: "In quali condizioni un Sergente può autorizzare armamento pesante?", options: ["In operazioni pianificate ad alto rischio", "In presenza di più sospetti armati", "In conflitto a fuoco o minaccia elevata", "Solo con autorizzazione preventiva del comando"], correct: 2 },
+    { q: "Qual è la procedura corretta se un subordinato viola le regole radio?", options: ["Correzione immediata via radio", "Annotazione informale dell’evento", "Richiamo privato e segnalazione formale", "Segnalazione diretta al comando"], correct: 2 },
+    { q: "Durante un inseguimento prolungato e pericoloso, chi può autorizzare la PIT?", options: ["Il capo pattuglia coinvolto", "Il coordinatore o grado più alto", "L’unità HSU presente", "Il primo agente che valuta il rischio"], correct: 1 },
+    { q: "Qual è il comportamento corretto se una pattuglia LINCOLN richiede supporto in zona ad alto rischio?", options: ["Fornire indicazioni a distanza", "Attendere conferma della centrale", "Integrare unità ADAM prima di operare", "Affiancare temporaneamente la LINCOLN"], correct: 2 },
+    { q: "Cosa comporta una perquisizione illegittima?", options: ["Richiamo interno senza conseguenze operative", "Ripetizione corretta della procedura", "Inammissibilità prove e sanzioni disciplinari", "Solo segnalazione al comando"], correct: 2 },
+    { q: "Qual è il ruolo del Sergente in uno scenario con ostaggi?", options: ["Supportare direttamente la squadra d’irruzione", "Gestire le comunicazioni radio", "Perimetro, coordinamento e negoziazione", "Monitorare la situazione in attesa di ordini superiori"], correct: 2 },
+    { q: "Quando è giustificato l’uso della forza letale?", options: ["Quando il sospetto è armato ma non collabora", "Durante una fuga pericolosa", "Minaccia reale e immediata alla vita", "Per impedire un reato grave"], correct: 2 },
+    { q: "Chi può approvare l’emanazione del DEFCON 3?", options: ["Il Sergente di turno", "Il coordinatore operativo", "Procuratore Generale o Alto Comando", "Il comando locale"], correct: 2 },
+    { q: "Qual è la durata massima del DEFCON 2?", options: ["12 ore con rinnovo", "24 ore", "48 ore", "Fino a cessata emergenza"], correct: 1 },
+    { q: "In una BOX a T, qual è l’obiettivo principale?", options: ["Bloccare la via di fuga anteriore", "Bloccare frontalmente e posteriormente", "Forzare l’arresto del veicolo", "Limitare i danni collaterali"], correct: 1 },
+    { q: "Se un agente utilizza eccessivamente il Taser, quale deve essere l’intervento del Sergente?", options: ["Valutare solo l’esito operativo", "Fornire correzione verbale immediata", "Segnalare e avviare indagine interna", "Riassegnare temporaneamente l’agente"], correct: 2 },
+    { q: "Qual è la responsabilità del Sergente dopo un arresto complesso?", options: ["Delegare completamente la gestione", "Verificare rapporto e corrette procedure", "Informare esclusivamente il comando", "Supervisionare solo la detenzione"], correct: 1 },
+    { q: "Cosa indica il ritorno a CODICE 4?", options: ["Conclusione dell’evento operativo", "Fine stato di emergenza", "Rientro in pattugliamento ordinario", "Ripristino delle comunicazioni standard"], correct: 1 },
+    { q: "In caso di panic button attivo, cosa deve fare un Sergente?", options: ["Intervenire immediatamente sul posto", "Mettersi in ascolto radio", "Raccogliere info e coordinare risposta", "Attendere indicazioni del comando"], correct: 2 },
+    { q: "Chi coordina le unità durante una fuga a piedi in ambiente boschivo?", options: ["L’unità più vicina", "Il coordinatore radio", "Il grado più alto sul posto", "La centrale operativa"], correct: 2 },
+    { q: "Qual è l’obiettivo primario di un Sergente in servizio?", options: ["Essere presente sul campo", "Garantire efficienza operativa", "Garantire sicurezza e rispetto delle procedure", "Supportare attivamente gli agenti"], correct: 2 }
 ];
+
+
 
 // --- VARIABILI GLOBALI ---
 let currentQuestionsDB = [];

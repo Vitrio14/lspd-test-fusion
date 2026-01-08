@@ -51,7 +51,7 @@ const questionsSergente = [
     { q: "Subordinato non rispetta protocollo radio. Azione correttiva?", options: ["Urla via radio", "Richiamo privato e poi rapporto scritto", "Ignora", "Licenziamento subito"], correct: 1 },
     { q: "Quando è giustificata la forza letale (Codice 4)?", options: ["Sospetto scappa a piedi", "Minaccia attiva alla vita con armi", "Insulti all'agente", "Furto d'auto"], correct: 1 },
     { q: "Obiettivo 'Air Support' (Elicottero)?", options: ["Sparare", "Visuale costante e coordinamento unità terra", "Trasporto", "Rifornimento"], correct: 1 },
-    { q: "Sospetto dichiara vizio di forma e chiede rilascio. Cosa fai?", options: ["Lo rilasci", "Verifichi diritti e prosegui (deciderà il Giudice)", "Lo minacci", "Sequestri il telefono"], correct: 1 },
+    { q: "Soggetto dichiara vizio di forma e chiede rilascio. Cosa fai?", options: ["Lo rilasci", "Verifichi diritti e prosegui (deciderà il Giudice)", "Lo minacci", "Sequestri il telefono"], correct: 1 },
     { q: "Differenza tra Furto e Rapina?", options: ["Nessuna", "Furto senza violenza, Rapina con violenza/minaccia", "Rapina solo in banca", "Furto solo di notte"], correct: 1 },
     { q: "Regola d'oro negoziazione ostaggi?", options: ["Promettere tutto", "Mai scambiare ostaggio con agenti o armi", "Arrendersi", "Entrare mentre si parla"], correct: 1 },
     { q: "Chi coordina i rinforzi in una fuga a piedi nei boschi?", options: ["L'agente che corre", "Il grado più alto sul posto", "La centrale", "Nessuno"], correct: 1 },
@@ -72,81 +72,162 @@ let timeLeft = 1800;
 let timerInterval;
 let isExamStarted = false;
 
-// Orologio tempo reale
+// --- INIZIALIZZAZIONE ---
+window.addEventListener('DOMContentLoaded', () => {
+    updateClock();
+    
+    // Recupero notifiche post-refresh
+    const pendingMsg = localStorage.getItem("pendingNotification");
+    const pendingType = localStorage.getItem("pendingType");
+    
+    if (pendingMsg) {
+        // Delay per assicurarsi che il DOM sia pronto e visibile
+        setTimeout(() => {
+            showNotification(pendingMsg, pendingType || "success");
+            localStorage.removeItem("pendingNotification");
+            localStorage.removeItem("pendingType");
+        }, 600);
+    }
+});
+
 function updateClock() {
     const clockEl = document.getElementById('clock');
     if (clockEl) clockEl.innerText = new Date().toLocaleTimeString();
 }
 setInterval(updateClock, 1000);
 
-// --- STEP 1: LOGIN FIREBASE ---
+// --- SISTEMA NOTIFICHE (TOP RIGHT) ---
+function showNotification(message, type = 'error') {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    let icon = "⚠️";
+    if(type === 'success') icon = "✅";
+    if(type === 'error') icon = "🚫";
+    if(type === 'warning') icon = "⚡";
+    
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = "toastOut 0.4s forwards";
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
+}
+
+// --- STEP 1: LOGIN ---
 function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    const errorDiv = document.getElementById('authError');
     const loginBtn = document.getElementById('loginBtn');
-
-    if (!email || !password) return alert("Inserire credenziali!");
-
+    if (!email || !password) return showNotification("DATI MANCANTI", "error");
+    
     loginBtn.innerText = "VERIFICA IN CORSO...";
     loginBtn.disabled = true;
-
+    
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
+            showNotification("ACCESSO AUTORIZZATO", "success");
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('rp-section').classList.remove('hidden');
-            errorDiv.innerText = "";
         })
         .catch((error) => {
             loginBtn.innerText = "EFFETTUA LOGIN";
             loginBtn.disabled = false;
-            errorDiv.innerText = "ACCESSO NEGATO: Credenziali non valide.";
+            showNotification("CREDENZIALI NON VALIDE", "error");
         });
 }
 
-// --- STEP 2: NOME RP ---
+// --- STEP 2: IDENTITÀ ---
 function confirmIdentity() {
     const nameInput = document.getElementById('rpName').value;
-    if (nameInput.trim().length < 5) return alert("Inserire Nome e Cognome RP validi!");
-
+    if (nameInput.trim().length < 5) return showNotification("NOME TROPPO CORTO", "error");
+    
     userName = nameInput.trim().toUpperCase();
+    
+    // Nascondi e cambia schermata
     document.getElementById('rp-section').classList.add('hidden');
     document.getElementById('course-section').classList.remove('hidden');
+    
+    // Notifica immediata fluida
+    setTimeout(() => {
+        showNotification(`BENVENUTO AGENTE ${userName}`, "success");
+    }, 100);
 }
 
-// --- STEP 3: SELEZIONE E AVVIO ESAME ---
+// --- STEP 3: SELEZIONE ESAME ---
 function selectExam(type) {
     examType = type === 'recluta' ? "RECLUTA / CADETTO" : "SERGENTE";
     currentQuestionsDB = type === 'recluta' ? questionsRecluta : questionsSergente;
     
-    // Aggiorna titoli nell'interfaccia
-    document.getElementById('exam-title-display').innerText = `ESAME ${examType}`;
-    
+    document.getElementById('briefing-title').innerText = `BRIEFING ESAME ${examType}`;
     document.getElementById('nameModal').classList.add('hidden');
+    document.getElementById('briefing-section').classList.remove('hidden');
+    showNotification("PROTOCOLLI CARICATI", "warning");
+}
+
+function cancelBriefing() {
+    document.getElementById('briefing-section').classList.add('hidden');
+    document.getElementById('nameModal').classList.remove('hidden');
+}
+
+function backToName() {
+    document.getElementById('course-section').classList.add('hidden');
+    document.getElementById('rp-section').classList.remove('hidden');
+}
+
+// --- STEP 4: AVVIO ESAME ---
+function startFinalExam() {
+    document.getElementById('briefing-section').classList.add('hidden');
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('exam-timer').classList.remove('hidden');
+    document.getElementById('exam-title-display').innerText = `ESAME ${examType}`;
+    
+    const abortBtn = document.getElementById('abort-btn');
+    if(abortBtn) abortBtn.classList.remove('hidden');
     
     isExamStarted = true;
     startTimer();
     loadQuestion();
+    showNotification("SESSIONE INIZIATA", "success");
 }
 
-// --- LOGICA TIMER ---
+// --- GESTIONE ANNULLAMENTO ---
+function confirmAbort() { document.getElementById('abort-modal').classList.remove('hidden'); }
+function closeAbortModal() { document.getElementById('abort-modal').classList.add('hidden'); }
+
+async function abortExam() {
+    clearInterval(timerInterval);
+    isExamStarted = false; 
+    document.getElementById('abort-modal').classList.add('hidden');
+    
+    // Prepariamo la notifica per il post-refresh
+    localStorage.setItem("pendingNotification", "OPERAZIONE ANNULLATA - TEST RESETTATO");
+    localStorage.setItem("pendingType", "warning");
+
+    // Invio dati a Discord e attesa
+    await sendToDiscord(userName, 0, 0, "🛑 ANNULLATO", examType);
+    
+    location.reload();
+}
+
+// --- TIMER ---
 function startTimer() {
     timerInterval = setInterval(() => {
         timeLeft--;
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         const timerDisplay = document.getElementById('exam-timer');
-        
         if (timerDisplay) {
             timerDisplay.innerText = `TEMPO RIMASTO: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            if (timeLeft <= 300) timerDisplay.classList.add('timer-critical');
+            if (timeLeft <= 300) {
+                timerDisplay.style.color = "var(--error-red)";
+            }
         }
-
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            alert("TEMPO SCADUTO!");
             showResults();
         }
     }, 1000);
@@ -158,16 +239,20 @@ function loadQuestion() {
     const qData = currentQuestionsDB[currentQuestion];
     const progressBar = document.getElementById('progress-bar');
     
-    if (progressBar) {
-        progressBar.style.width = (currentQuestion / currentQuestionsDB.length * 100) + "%";
-    }
-
+    if (progressBar) progressBar.style.width = (currentQuestion / currentQuestionsDB.length * 100) + "%";
+    
     quizBox.innerHTML = `
-        <h3>DOMANDA ${currentQuestion + 1} / ${currentQuestionsDB.length}</h3>
-        <p>${qData.q}</p>
+        <h2 style="color: var(--main-blue); font-family: var(--header-font); font-size: 1rem; margin-bottom: 10px;">
+            DOMANDA ${currentQuestion + 1} / ${currentQuestionsDB.length}
+        </h2>
+        <p style="font-size: 1.2rem; font-weight: bold; line-height: 1.5; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.02); border-left: 4px solid var(--main-blue);">
+            ${qData.q}
+        </p>
         <div class="options-list">
             ${qData.options.map((opt, i) => `
-                <button class="option" onclick="checkAnswer(${i})">> ${opt}</button>
+                <button class="option" onclick="checkAnswer(${i})">
+                    <span style="color: var(--main-blue); margin-right: 15px; font-weight: bold;">[${i+1}]</span> ${opt}
+                </button>
             `).join('')}
         </div>
     `;
@@ -176,72 +261,81 @@ function loadQuestion() {
 function checkAnswer(idx) {
     if (idx === currentQuestionsDB[currentQuestion].correct) score++;
     currentQuestion++;
-    
     if (currentQuestion < currentQuestionsDB.length) {
         loadQuestion();
     } else {
         clearInterval(timerInterval);
-        isExamStarted = false;
         showResults();
     }
 }
 
-function showResults() {
+async function showResults() {
+    isExamStarted = false;
     document.getElementById('quiz-box').classList.add('hidden');
     document.getElementById('result').classList.remove('hidden');
     document.getElementById('exam-timer').classList.add('hidden');
+    if(document.getElementById('abort-btn')) document.getElementById('abort-btn').classList.add('hidden');
 
     const total = currentQuestionsDB.length;
     const percent = Math.round((score / total) * 100);
     
-    // Soglia Sergente 90%, Recluta 75%
-    const threshold = examType === "SERGENTE" ? 90 : 75;
-    const status = percent >= threshold ? "IDONEO" : "NON IDONEO";
+    // LOGICA SOGLIA ERRORI (MAX 5 ERRORI = MINIMO 15 PUNTI)
+    let threshold = 15; 
+    let status = score >= threshold ? "IDONEO" : "NON IDONEO";
     
     document.getElementById('score-display').innerHTML = `
-        <div class="result-box">
-            <p>OPERATORE: ${userName}</p>
-            <p>ESAME: ${examType}</p>
-            <p>PUNTEGGIO: ${score}/${total} (${percent}%)</p>
-            <p>ESITO: <span style="color: ${percent >= threshold ? '#4CAF50' : '#ff4444'}">${status}</span></p>
+        <div class="result-box" style="border-left: 4px solid ${score >= threshold ? 'var(--success-green)' : 'var(--error-red)'}; padding: 20px; background: rgba(255,255,255,0.02);">
+            <p>AGENTE: <strong style="color: var(--main-blue);">${userName}</strong></p>
+            <p>ESITO: <span style="font-weight: bold; color: ${score >= threshold ? 'var(--success-green)' : 'var(--error-red)'}">${status}</span></p>
+            <p>RISPOSTE CORRETTE: ${score}/${total}</p>
+            <p>ERRORI COMMESSI: ${total - score}</p>
+            <p style="font-size: 0.8rem; margin-top: 15px; opacity: 0.6;">Rapporto inviato al comando centrale Fusion Eternal.</p>
         </div>
     `;
-    
-    sendToDiscord(userName, score, percent, status, examType);
+
+    await sendToDiscord(userName, score, percent, status, examType);
 }
 
-// --- INVIO DISCORD ---
+// --- FUNZIONE WEBHOOK ---
 async function sendToDiscord(user, pts, perc, stat, type) {
-    if(!WEBHOOK_URL.startsWith("https")) return;
-    
-    const timeSpent = 30 - Math.floor(timeLeft / 60);
+    if(!WEBHOOK_URL) return console.error("URL Webhook mancante");
+
+    let color = 3066993; // Verde
+    if (stat === "NON IDONEO") color = 15158332; // Rosso
+    if (stat.includes("ANNULLATO")) color = 8355711; // Grigio
+
     const payload = {
         embeds: [{
-            title: `📢 ESITO TEST: ${type}`,
-            color: stat === "IDONEO" ? 3066993 : 15158332,
+            title: `📋 RAPPORTO ESAME LSPD: ${type}`,
+            color: color,
             fields: [
-                { name: "Candidato", value: user, inline: true },
-                { name: "Esito", value: stat, inline: true },
-                { name: "Punteggio", value: `${pts}/20 (${perc}%)` },
-                { name: "Tempo impiegato", value: `${timeSpent} minuti`, inline: true }
+                { name: "👤 Candidato", value: `\`${user}\``, inline: true },
+                { name: "⚖️ Esito", value: `**${stat}**`, inline: true },
+                { name: "📊 Punteggio", value: `${pts} / ${currentQuestionsDB.length} (${perc}%)` }
             ],
-            footer: { text: "Sistema LSPD Fusion Eternal - Terminale Centrale" },
-            timestamp: new Date()
+            footer: { text: "Fusion Eternal RP - Terminale LSPD" },
+            timestamp: new Date().toISOString()
         }]
     };
 
     try {
-        await fetch(WEBHOOK_URL, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(payload) 
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
         });
-    } catch (err) {
-        console.error("Errore Webhook:", err);
+    } catch (e) {
+        console.error("Errore invio Webhook:", e);
     }
 }
 
-// Blocco chiusura accidentale
-window.onbeforeunload = function() {
-    if (isExamStarted) return "Uscendo perderai i progressi. Confermi?";
+function finalLogout() {
+    // Salvataggio notifica per il post-refresh
+    localStorage.setItem("pendingNotification", "SESSIONE RESETTATA - TERMINALE PRONTO");
+    localStorage.setItem("pendingType", "success");
+    location.reload();
+}
+
+window.onbeforeunload = function() { 
+    if (isExamStarted) return "Il test verrà annullato se esci!"; 
 };

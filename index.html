@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSPD - Terminale Operativo Fusion Eternal</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body oncontextmenu="return false;"> 
+    <div id="notification-container"></div>
     <div class="scanline"></div>
 
     <div class="main-wrapper">
@@ -17,6 +18,9 @@
                 <span class="blink-dot"></span>
                 <span>SISTEMA CRITTOGRAFATO LSPD</span>
             </div>
+
+            <button id="abort-btn" class="btn-abort hidden" onclick="confirmAbort()">ANNULLA TEST</button>
+            
             <div id="exam-timer" class="timer-alert hidden">TEMPO RIMASTO: 30:00</div>
             <div id="clock">00:00:00</div>
         </header>
@@ -31,72 +35,104 @@
             </div>
 
             <div class="progress-wrapper">
-                <div id="progress-bar"></div>
+                <div id="progress-bar" style="height: 4px; background: var(--main-blue); width: 0%; transition: 0.3s; box-shadow: 0 0 10px var(--main-blue);"></div>
             </div>
             
-            <div id="quiz-box"></div>
+            <div id="quiz-box" style="margin-top: 30px;">
+                </div>
 
             <div id="result" class="hidden">
-                <h2 class="glow-text">SESSIONE COMPLETATA</h2>
+                <h2 style="font-family: var(--header-font); color: var(--gold); margin-bottom: 20px;">SESSIONE COMPLETATA</h2>
                 <div id="score-display"></div>
-                <button class="btn-primary" onclick="location.reload()">CHIUDI SESSIONE / LOGOUT</button>
+                <button class="btn-primary" onclick="finalLogout()">CHIUDI SESSIONE / LOGOUT</button>
+            </div>
+        </div>
+
+        <div id="briefing-section" class="container hidden">
+            <div class="terminal-header">
+                <img src="logo.png" class="logo" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
+                <div class="header-text">
+                    <h1 id="briefing-title">BRIEFING OPERATIVO</h1>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <p style="color: var(--gold); margin-bottom: 15px; font-weight: bold; font-family: var(--header-font);">⚠️ PROTOCOLLO DI VALUTAZIONE</p>
+                <p>Il sistema sta per inizializzare i dati. Una volta confermato l'avvio, il timer non potrà essere messo in pausa.</p>
+                
+                <p style="margin-top: 20px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">REGOLE D'INGAGGIO:</p>
+                <ul style="list-style: none; padding-left: 10px; margin-top: 10px; line-height: 1.8;">
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Analisi critica di ogni quesito operativo.</li>
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Divieto assoluto di ausili esterni (Codici o suggerimenti).</li>
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il mancato superamento richiede tempo di attesa per il re-test.</li>
+                </ul>
+                <p style="margin-top: 25px; font-style: italic; color: #666; font-size: 0.8rem; text-align: center;">"Obedience to the law is freedom."</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-primary" onclick="startFinalExam()">INIZIA ESAME</button>
+                <p class="back-link" style="margin-top: 20px;" onclick="cancelBriefing()">← TORNA ALLA SELEZIONE</p>
             </div>
         </div>
     </div>
 
     <div id="nameModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-decor"></div>
             <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
             
             <div id="auth-section">
-                <h2>ACCESSO OPERATIVO</h2>
-                <p>Inserire credenziali ministeriali</p>
-                <div class="auth-fields">
-                    <input type="email" id="loginEmail" placeholder="EMAIL AGENTE" autocomplete="email">
-                    <input type="password" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password">
-                </div>
+                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">ACCESSO OPERATIVO</h2>
+                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Inserire credenziali Agente</p>
+                <input type="email" id="loginEmail" placeholder="EMAIL DI SERVIZIO" autocomplete="email">
+                <input type="password" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password">
                 <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA LOGIN</button>
             </div>
 
             <div id="rp-section" class="hidden">
-                <h2>IDENTIFICAZIONE RP</h2>
-                <p>Inserire Nome e Cognome del personaggio</p>
-                <div class="auth-fields">
-                    <input type="text" id="rpName" placeholder="ES: MARIO ROSSI" autocomplete="off">
-                </div>
+                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">IDENTIFICAZIONE</h2>
+                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Specificare Nome e Cognome RP</p>
+                <input type="text" id="rpName" placeholder="ES: MARCO ROSSI" autocomplete="off">
                 <button class="btn-primary" onclick="confirmIdentity()">CONFERMA IDENTITÀ</button>
+                <p class="back-link" style="color: #666; margin-top: 15px;" onclick="location.reload()">← RESET SESSIONE</p>
             </div>
 
             <div id="course-section" class="hidden">
-                <h2>PROTOCOLLI DISPONIBILI</h2>
-                <p>Selezionare il test da sostenere:</p>
+                <h2 style="font-family: var(--header-font); font-size: 1.2rem; color: var(--main-blue);">PROTOCOLLI</h2>
                 <div class="course-grid">
                     <button class="btn-course" onclick="selectExam('recluta')">
                         <span class="rank">RECLUTA / CADETTO</span>
-                        <span class="desc">Accesso Livello 1 - Procedure Base</span>
+                        <span class="desc">VALUTAZIONE PROCEDURE DI BASE</span>
                     </button>
                     <button class="btn-course" onclick="selectExam('sergente')">
-                        <span class="rank">PROMOZIONE AL GRADO SERGENTE</span>
-                        <span class="desc">Livello Avanzato - Comando e Logica</span>
+                        <span class="rank">PROMOZIONE SERGENTE</span>
+                        <span class="desc">PROTOCOLLI DI COMANDO E COORDINAMENTO</span>
                     </button>
                 </div>
+                <p class="back-link" style="color: var(--gold); margin-top: 15px;" onclick="backToName()">← MODIFICA IDENTITÀ</p>
             </div>
-            
-            <div id="authError" class="error-msg"></div>
+        </div>
+    </div>
+
+    <div id="abort-modal" class="modal-overlay hidden">
+        <div class="modal-box" style="border-color: var(--error-red);">
+            <h2 style="color: var(--error-red); font-family: var(--header-font);">⚠️ ATTENZIONE ⚠️</h2>
+            <p style="margin: 20px 0;">L'annullamento forzato verrà registrato nel database come **FALLIMENTO**.</p>
+            <p><strong>Vuoi davvero procedere?</strong></p>
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button class="btn-primary" style="background: var(--error-red); box-shadow: 0 4px 0 #900;" onclick="abortExam()">SÌ, ANNULLA</button>
+                <button class="btn-primary" onclick="closeAbortModal()">NO, CONTINUA</button>
+            </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
     <script src="script.js"></script>
 
-<footer class="terminal-footer">
-    <div class="footer-content">
-        <span class="copyright">© 2026 LOS SANTOS POLICE DEPARTMENT - FUSION ETERNAL</span>
-    </div>
-</footer>
-</footer>
+    <footer class="terminal-footer">
+        <div class="footer-content">
+            <span class="copyright">© 2026 LOS SANTOS POLICE DEPARTMENT - PROTOCOLLO FUSION ETERNAL</span>
+        </div>
+    </footer>
 </body>
 </html>

@@ -256,8 +256,22 @@ function loadQuestion() {
 }
 
 function selectAnswer(idx) {
+    // 1. Salva la risposta nell'array
     userAnswers[currentQuestion] = idx;
+    
+    // 2. Ricarica la domanda per mostrare graficamente il tasto selezionato
     loadQuestion(); 
+
+    // 3. Aspetta un breve momento (300ms) per dare feedback visivo, poi passa alla successiva
+    // Se è l'ultima domanda, non fa nulla (l'utente dovrà premere "Revisione Finale")
+    if (currentQuestion < currentQuestionsDB.length - 1) {
+        setTimeout(() => {
+            currentQuestion++;
+            loadQuestion();
+        }, 300); // 300 millisecondi di ritardo
+    } else {
+        showNotification("ULTIMA DOMANDA RAGGIUNTA - CONTROLLA E INVIA", "warning");
+    }
 }
 
 function nextQuestion() {

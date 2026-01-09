@@ -476,7 +476,7 @@ async function submitCandidatura() {
                 { name: "💼 Esperienze Pregresse", value: exp || "Nessuna info" },
                 { name: "🎯 Motivazioni", value: motivazioni || "Nessuna info" }
             ],
-            footer: { text: `LSPD Global Terminal | Registro: ${registroID}` },
+            footer: { text: `LSPD - Sistema reclutamenti - Registro: ${registroID}` },
             timestamp: new Date().toISOString()
         }]
     };
@@ -545,4 +545,5 @@ modalBox.innerHTML = `
             </button>
         </div>
     `;
+
 }

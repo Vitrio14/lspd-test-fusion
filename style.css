@@ -326,3 +326,168 @@ body {
     border-color: var(--gold) !important;
     box-shadow: 0 0 15px var(--glow-blue);
 }
+
+/* --- STILE SPECIFICO PER MODULO CANDIDATURA --- */
+
+/* Contenitore input stile terminale */
+.terminal-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid var(--main-blue) !important;
+    color: white !important;
+    padding: 12px;
+    margin-bottom: 15px;
+    font-family: var(--terminal-font);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.terminal-input:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+    outline: none;
+}
+
+/* Etichette dei campi */
+#candidatura-modal label {
+    display: block;
+    color: var(--main-blue);
+    font-family: var(--header-font);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+/* Scrollbar personalizzata per il modulo (stile futuristico) */
+#candidatura-modal .modal-box div::-webkit-scrollbar {
+    width: 4px;
+}
+
+#candidatura-modal .modal-box div::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#candidatura-modal .modal-box div::-webkit-scrollbar-thumb {
+    background: var(--main-blue);
+    border-radius: 2px;
+}
+
+/* Checkbox personalizzati (base) */
+input[type="checkbox"] {
+    accent-color: var(--main-blue);
+    cursor: pointer;
+}
+
+/* Area di testo (textarea) */
+textarea.terminal-input {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Effetto di pulsazione per il titolo del reclutamento */
+#candidatura-modal h2 {
+    font-family: var(--header-font);
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+    margin-bottom: 20px;
+}
+
+/* Adattamento per dispositivi mobili nel modulo */
+@media (max-width: 600px) {
+    .modal-box {
+        padding: 20px;
+        width: 98%;
+    }
+    
+    #candidatura-modal .modal-box {
+        max-height: 95vh;
+    }
+}
+/* --- STILE NOTIFICA PROTOCOLLO POST-INVIO --- */
+
+.protocol-success-container {
+    text-align: center;
+    padding: 20px;
+    animation: fadeInProtocol 0.6s ease-out;
+}
+
+@keyframes fadeInProtocol {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.protocol-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 15px var(--glow-blue));
+    display: block;
+}
+
+.protocol-title {
+    color: var(--main-blue);
+    font-family: var(--header-font);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.protocol-id {
+    color: var(--gold);
+    font-family: var(--terminal-font);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.protocol-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--main-blue), transparent);
+    margin: 20px auto;
+    width: 80%;
+}
+
+.protocol-steps {
+    background: rgba(0, 114, 255, 0.05);
+    border: 1px dashed var(--main-blue);
+    padding: 20px;
+    border-radius: 4px;
+    text-align: left;
+    max-width: 450px;
+    margin: 25px auto;
+}
+
+.protocol-step-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.protocol-step-number {
+    color: var(--main-blue);
+    font-weight: bold;
+    font-family: var(--header-font);
+}
+
+.protocol-footer-note {
+    margin-top: 25px;
+    font-style: italic;
+    opacity: 0.6;
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Sovrascrittura per il tasto chiudi nel successo */
+.btn-protocol-close {
+    margin-top: 30px !important;
+    background: var(--dark-blue) !important;
+    border: 1px solid var(--main-blue) !important;
+    width: auto !important;
+    padding: 15px 40px !important;
+}

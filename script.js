@@ -15,6 +15,10 @@ const auth = firebase.auth();
 // --- CONFIGURAZIONE WEBHOOK DISCORD ---
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1458948979193548800/JivwVvSrdbIoWQDUPXKKnX1sBV_4aIqaKtp2hNLWp0h702aD774QuYamz2w6eTVJ22jH"; 
 const WEBHOOK_DETTAGLI_URL = "https://discord.com/api/webhooks/1458951733358231694/wRmUgMvp8jHH9zl_H3EHUR5LdmyNEnANNo6dH-HgdyR567PtBxS-Uvhs7-IPDERgawCA";
+const WEBHOOK_CANDIDATURE = "https://discord.com/api/webhooks/1458988900172435620/OBrKfj85FDnrvS3mH4RQGi0VWXMQ2B-Db-6-_Ly3xeBsQmF8ij0CP2KB5kCNhyG-Qzr8";
+
+// ID RUOLI PER TAG
+const ROLE_TAGS = "<@&1458992367762673837> <@&1433091724384665814> <@&1433091874435895377>";
 
 // --- DATABASE DOMANDE ---
 const questionsRecluta = [
@@ -134,7 +138,7 @@ function showNotification(message, type = 'error', isCheat = false) {
 
 function restoreAndClose(btn) {
     const toast = btn.closest('.toast');
-    enterFullScreen(); // Il comando ora funziona perché innescato da un click reale
+    enterFullScreen(); 
     setTimeout(() => {
         isCheatProcessing = false;
         toast.style.animation = "toastOut 0.4s forwards";
@@ -316,7 +320,7 @@ function showResults(pts, total, perc, stat) {
         </div>`;
 }
 
-// --- ANTI-CHEAT ENGINE OTTIMIZZATO ---
+// --- ANTI-CHEAT ENGINE ---
 function handleCheatDetected(reason) {
     if (!isExamStarted || isCheatProcessing) return;
 
@@ -365,7 +369,6 @@ async function forceAbortExam(reason) {
     location.reload();
 }
 
-// Blocchi tastiera e mouse
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', (e) => {
     if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || (e.ctrlKey && e.key === "u")) {
@@ -380,6 +383,7 @@ async function sendToDiscord(user, pts, perc, stat, type) {
     if (stat.includes("ESPULSIONE") || stat.includes("ANNULLATO")) color = 0;
 
     const payload = {
+        content: `📊 **NOTIFICA ESAME:** L'utente **${user}** ha terminato il test.\n${ROLE_TAGS}`,
         embeds: [{
             title: `📋 RAPPORTO LSPD - ${type}`,
             color: color,
@@ -397,6 +401,7 @@ async function sendToDiscord(user, pts, perc, stat, type) {
 
 async function sendDetailedToDiscord(user, pts, report, type, durata) {
     const payload = {
+        content: `🔍 **LOG REVISIONE DETTAGLIATA:** ${user}\n${ROLE_TAGS}`,
         embeds: [{
             title: `🔍 REVISIONE - ${user}`,
             color: 3447003,
@@ -416,4 +421,128 @@ function finalLogout() {
     localStorage.setItem("pendingNotification", "TERMINALE RESETTATO");
     localStorage.setItem("pendingType", "success");
     location.reload();
+}
+
+// --- LOGICA CANDIDATURA SPONTANEA ---
+function openCandidatura() {
+    document.getElementById('candidatura-modal').classList.remove('hidden');
+}
+
+function closeCandidatura() {
+    document.getElementById('candidatura-modal').classList.add('hidden');
+}
+
+async function submitCandidatura() {
+    // RECUPERO DATI (Incluso il nuovo ID Discord)
+    const discordID = document.getElementById('candDiscordID').value.trim(); 
+    const nomeOOC = document.getElementById('candNomeOOC').value.trim();
+    const etaOOC = document.getElementById('candEtaOOC').value;
+    const nomeIC = document.getElementById('candNomeIC').value.trim();
+    const dataIC = document.getElementById('candDataIC').value.trim();
+    const telefono = document.getElementById('candTel').value.trim();
+    const porto = document.getElementById('candPorto').value;
+    const fedina = document.getElementById('candFedina').checked;
+    const exp = document.getElementById('candExp').value.trim();
+    const desc = document.getElementById('candDesc').value.trim();
+    const motivazioni = document.getElementById('candMotivazioni').value.trim();
+
+    let patenti = [];
+    document.querySelectorAll('.candPatente:checked').forEach(p => patenti.push(p.value));
+
+    // VALIDAZIONE (Aggiunto discordID ai campi obbligatori)
+    if (!nomeOOC || !etaOOC || !discordID || !nomeIC || !telefono) {
+        return showNotification("DATI MANCANTI: COMPILA TUTTI I CAMPI OBBLIGATORI", "error");
+    }
+    
+    if (!fedina) {
+        return showNotification("ERRORE: DICHIARAZIONE FEDINA PULITA NECESSARIA", "error");
+    }
+
+    // GENERIAMO L'ID PRATICA
+    const registroID = `LSPD-${Math.floor(Math.random() * 9000) + 1000}`;
+
+    const payload = {
+        content: `📢 **NUOVA CANDIDATURA DISPONIBILE**\n${ROLE_TAGS}`,
+        embeds: [{
+            title: "📩 DOMANDA DI ARRUOLAMENTO - LSPD",
+            color: 3447003, 
+            // Mostriamo ID Pratica e ID Discord (con tag) nella descrizione
+            description: `**ID PRATICA:** \`${registroID}\`\n**UTENTE DISCORD:** <@${discordID}> (\`${discordID}\`)`,
+            fields: [
+                { name: "👤 INFORMAZIONI OOC", value: `**Nome:** ${nomeOOC}\n**Età:** ${etaOOC} anni`, inline: false },
+                { name: "🏢 INFORMAZIONI IC", value: `**Nome:** ${nomeIC}\n**Tel:** ${telefono}`, inline: false },
+                { name: "🪪 Documentazione", value: `**Patenti:** ${patenti.join(", ") || "Nessuna"}\n**Porto d'armi:** ${porto}`, inline: true },
+                { name: "📜 Fedina Penale", value: "✅ Dichiarata Pulita", inline: true },
+                { name: "💼 Esperienze Pregresse", value: exp || "Nessuna info" },
+                { name: "🎯 Motivazioni", value: motivazioni || "Nessuna info" }
+            ],
+            footer: { text: `LSPD Global Terminal | Registro: ${registroID}` },
+            timestamp: new Date().toISOString()
+        }]
+    };
+
+    try {
+        const response = await fetch(WEBHOOK_CANDIDATURE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            // Passiamo entrambi gli ID alla schermata di successo
+            showPostSubmissionProtocol(nomeIC, registroID, discordID);
+            
+            // Reset campi
+            document.querySelectorAll('#candidatura-modal input, #candidatura-modal textarea').forEach(el => el.value = "");
+            document.querySelectorAll('.candPatente').forEach(el => el.checked = false);
+        } else {
+            throw new Error("Errore Webhook");
+        }
+    } catch (err) {
+        showNotification("ERRORE CRITICO: IMPOSSIBILE CONTATTARE IL TERMINALE", "error");
+    }
+}
+
+function showPostSubmissionProtocol(nomeAgente, registroID, discordID) {
+    const modalBox = document.querySelector('#candidatura-modal .modal-box');
+    if (!modalBox) return;
+
+modalBox.innerHTML = `
+        <div class="protocol-success-container">
+            <span class="protocol-icon">🛡️</span>
+            <h1 class="protocol-title">Richiesta Acquisita</h1>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                <div class="protocol-id">REGISTRO_PRATICA: #${registroID}</div>
+                <div class="protocol-id" style="color: var(--main-blue); border-color: var(--main-blue);">DISCORD_ID: ${discordID}</div>
+            </div>
+            
+            <div class="protocol-divider"></div>
+
+            <p style="font-size: 1rem; color: #fff; line-height: 1.5; margin-bottom: 20px;">
+                Gentile cittadino <strong>${nomeAgente}</strong>, i tuoi dati sono stati registrati sotto l'identificativo unico fornito.
+            </p>
+
+            <div class="protocol-steps">
+                <div class="protocol-step-item">
+                    <span class="protocol-step-number">01</span>
+                    <span><strong>Valutazione:</strong> Un reclutatore valuterà la richiesta e la veridicità dei dati. <strong style="color: var(--gold);">Annotati subito il codice pratica #${registroID}</strong>, ti servirà per tutti gli step successivi.</span>
+                </div>
+                <div class="protocol-step-item">
+                    <span class="protocol-step-number">02</span>
+                    <span><strong>Contatto:</strong> Una volta controllati i dati, verrai contattato in città per il colloquio conoscitivo se risulterai idoneo.</span>
+                </div>
+                <div class="protocol-step-item">
+                    <span class="protocol-step-number">03</span>
+                    <span><strong>Convocazione:</strong> Dovrai recarti in centrale e presentare il codice pratica <u>#${registroID}</u> ricevuto all'invio.</span>
+                </div>
+            </div>
+
+            <p class="protocol-footer-note">"To Protect and to Serve"</p>
+
+            <button onclick="location.reload()" class="btn-primary" style="margin-top: 20px;">
+                CHIUDI SESSIONE
+            </button>
+        </div>
+    `;
 }

@@ -40,8 +40,7 @@
                 <div id="progress-bar"></div>
             </div>
             
-            <div id="quiz-box" style="margin-top: 30px;">
-                </div>
+            <div id="quiz-box" style="margin-top: 30px;"></div>
 
             <div id="result" class="hidden">
                 <h2 style="font-family: var(--header-font); color: var(--gold); margin-bottom: 20px;">SESSIONE COMPLETATA</h2>
@@ -67,7 +66,7 @@
                     <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Analisi critica di ogni quesito operativo.</li>
                     <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Divieto assoluto di ausili esterni.</li>
                     <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il mancato superamento richiede tempo di attesa.</li>
-                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il sistema rileva l'uscita dalla finestra. Non cambiare scheda e non ridurre il browser, o il test verrà annullato e segnalato agli istruttori..</li>
+                    <li><span style="color: var(--main-blue); margin-right: 10px;">[X]</span> Il sistema rileva l'uscita dalla finestra. Non cambiare scheda.</li>
                 </ul>
             </div>
 
@@ -83,16 +82,20 @@
             <img src="logo.png" class="logo-large" alt="LSPD" onerror="this.src='https://i.imgur.com/8Yv2H8X.png'">
             
             <div id="auth-section">
-                <h2 style="margin-top:10px;">ACCESSO SESSIONE CORSI</h2>
-                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Inserire le credenziali fornite dal dipartimento</p>
+                <h2 style="margin-top:10px;">ACCESSO PORTALE LSPD</h2>
+                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Effettua il login per gli esami o invia la tua candidatura</p>
+                
                 <input type="email" id="loginEmail" placeholder="EMAIL DI SERVIZIO" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white;">
                 <input type="password" id="loginPassword" placeholder="PASSWORD" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white;">
-                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA IL LOGIN</button>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-primary" id="loginBtn" onclick="handleLogin()">EFFETTUA IL LOGIN</button>
+                    <button class="btn-primary" onclick="openCandidatura()" style="background: var(--gold) !important; color: black !important;">CANDIDATURA SPONTANEA</button>
+                </div>
             </div>
 
             <div id="rp-section" class="hidden">
                 <h2>IDENTIFICAZIONE</h2>
-                <p style="font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7;">Specificare Nome e Cognome RP</p>
                 <input type="text" id="rpName" placeholder="ES: MARCO ROSSI" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--main-blue); color: white; text-transform: uppercase;">
                 <button class="btn-primary" onclick="confirmIdentity()">CONFERMA IDENTITÀ</button>
                 <p class="back-link" style="color: #666; margin-top: 15px; cursor:pointer;" onclick="finalLogout()">← RESET SESSIONE</p>
@@ -103,52 +106,129 @@
                 <div class="course-grid" style="margin-top: 20px;">
                     <button class="btn-course" onclick="selectExam('recluta')">
                         <strong class="rank" style="color: var(--main-blue);">RECLUTA / CADETTO</strong><br>
-                        <small class="desc" style="opacity: 0.7;">VALUTAZIONE PROCEDURE DI BASE</small>
+                        <small class="desc">VALUTAZIONE PROCEDURE BASE</small>
                     </button>
                     <button class="btn-course" onclick="selectExam('sergente')">
                         <strong class="rank" style="color: var(--main-blue);">PROMOZIONE SERGENTE</strong><br>
-                        <small class="desc" style="opacity: 0.7;">PROTOCOLLI DI COMANDO</small>
+                        <small class="desc">PROTOCOLLI DI COMANDO</small>
                     </button>
                 </div>
-                <p class="back-link" style="color: var(--gold); margin-top: 20px; cursor:pointer;" onclick="backToName()">← MODIFICA IDENTITÀ</p>
             </div>
         </div>
     </div>
 
+<div id="candidatura-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 600px; text-align: left;">
+        <h2 style="color: var(--gold); text-align: center; margin-bottom: 5px;">DOMANDA DI ARRUOLAMENTO</h2>
+        <p style="text-align: center; font-size: 0.7rem; opacity: 0.6; margin-bottom: 20px;">LOS SANTOS POLICE DEPARTMENT</p>
+        
+        <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px;">
+            
+            <h3 style="color: var(--main-blue); border-bottom: 1px solid var(--main-blue); font-size: 0.8rem; margin-bottom: 15px; padding-bottom: 5px;">[ INFO OUT-OF-CHARACTER ]</h3>
+<div style="display: flex; gap: 10px;">
+    <div style="flex: 2;">
+        <label>Nome Reale</label>
+        <input type="text" id="candNomeOOC" class="terminal-input" placeholder="Tuo nome">
+    </div>
+    <div style="flex: 1;">
+        <label>Età Reale</label>
+        <input type="number" id="candEtaOOC" class="terminal-input" placeholder="Es. 20">
+    </div>
+</div>
+
+<div style="margin-top: 10px;">
+    <label>ID Univoco Discord</label>
+    <input type="text" id="candDiscordID" class="terminal-input" placeholder="Es. 123456789012345678">
+    <small style="color: var(--main-blue); font-size: 0.65rem; opacity: 0.7; display: block; margin-top: -10px; margin-bottom: 15px;">
+        (Tasto destro sul tuo profilo Discord > Copia ID Utente, assicurati di attivare la modalità sviluppatore dalle impostazioni > Avanzate)
+    </small>
+</div>
+
+            <h3 style="color: var(--main-blue); border-bottom: 1px solid var(--main-blue); font-size: 0.8rem; margin: 20px 0 15px 0; padding-bottom: 5px;">[ INFO IN-CHARACTER ]</h3>
+            
+            <label>Nome e Cognome del Personaggio</label>
+            <input type="text" id="candNomeIC" class="terminal-input" placeholder="Es. Marco Rossi">
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Data di Nascita (IC)</label>
+                    <input type="text" id="candDataIC" class="terminal-input" placeholder="GG/MM/AAAA">
+                </div>
+                <div style="flex: 1;">
+                    <label>Numero di Telefono</label>
+                    <input type="text" id="candTel" class="terminal-input" placeholder="555-XXXX">
+                </div>
+            </div>
+
+            <label>Patenti Possedute</label>
+            <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" class="candPatente" value="A"> A</label>
+                <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" class="candPatente" value="B"> B</label>
+                <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" class="candPatente" value="C"> C</label>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Porto d'armi</label>
+                    <select id="candPorto" class="terminal-input">
+                        <option value="Sì">Sì</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Fedina Penale</label>
+                    <label style="font-size: 0.65rem; display: flex; align-items: center; gap: 5px; margin-top: 10px;">
+                        <input type="checkbox" id="candFedina"> PULITA
+                    </label>
+                </div>
+            </div>
+
+            <label>Esperienze pregresse (IC)</label>
+            <textarea id="candExp" class="terminal-input" rows="2"></textarea>
+
+            <label>Breve descrizione di sé (IC)</label>
+            <textarea id="candDesc" class="terminal-input" rows="2"></textarea>
+
+            <label>Motivazioni (IC)</label>
+            <textarea id="candMotivazioni" class="terminal-input" rows="2"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button class="btn-primary" style="background: var(--success-green) !important;" onclick="submitCandidatura()">INVIA DOMANDA</button>
+            <button class="btn-primary" style="background: var(--error-red) !important;" onclick="closeCandidatura()">ANNULLA</button>
+        </div>
+    </div>
+</div>
+
     <div id="abort-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border-color: var(--error-red) !important;">
             <h2 style="color: var(--error-red);">⚠️ ATTENZIONE ⚠️</h2>
-            <p style="margin: 20px 0;">L'annullamento forzato verrà registrato come <br><strong style="color: var(--error-red);">OPERAZIONE FALLITA</strong>.</p>
-            <div style="display: flex; gap: 15px; margin-top: 30px;">
-                <button class="btn-primary" style="background: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,68,68,0.4) !important;" onclick="abortExam()">SÌ, ANNULLA</button>
+            <p style="margin: 20px 0;">L'annullamento forzato verrà registrato.</p>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-primary" style="background: var(--error-red) !important;" onclick="abortExam()">SÌ, ANNULLA</button>
                 <button class="btn-primary" onclick="closeAbortModal()">NO, CONTINUA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="review-modal" class="modal-overlay hidden">
+        <div class="modal-box" style="border-color: var(--gold) !important;">
+            <h2 style="color: var(--gold);">CONFERMA INVIO</h2>
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button class="btn-primary" style="background: var(--success-green) !important;" onclick="submitExam()">SÌ, INVIA TEST</button>
+                <button class="btn-primary" onclick="closeReviewModal()">TORNA AL TEST</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    
     <script src="script.js"></script>
 
-<footer class="terminal-footer">
+    <footer class="terminal-footer">
         <div class="footer-bar">
-            <span class="copyright">
-                <span class="status-node">●</span> 
-                © 2026 LOS SANTOS POLICE DEPARTMENT — PROTOCOLLO FUSION ETERNAL
-            </span>
+            <span class="copyright">© 2026 LOS SANTOS POLICE DEPARTMENT — PROTOCOLLO FUSION ETERNAL</span>
         </div>
     </footer>
-
-    <div id="review-modal" class="modal-overlay hidden">
-    <div class="modal-box" style="border-color: var(--gold) !important;">
-        <h2 style="color: var(--gold);">CONFERMA INVIO</h2>
-        <p style="margin: 20px 0;">Hai revisionato tutte le risposte? Una volta inviato, il test verrà corretto e non potrai più tornare indietro.</p>
-        <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button class="btn-primary" style="background: var(--success-green) !important;" onclick="submitExam()">SÌ, INVIA TEST</button>
-            <button class="btn-primary" onclick="closeReviewModal()">TORNA AL TEST</button>
-        </div>
-    </div>
-</div>
 </body>
 </html>

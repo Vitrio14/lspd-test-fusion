@@ -40,7 +40,6 @@ const questionsRecluta = [
     { q: "Qual è lo STATUS radio che indica che una pattuglia è in rifornimento o riparazione?", options: ["STATUS 1", "STATUS 2", "STATUS 3", "STATUS 4"], correct: 2 }
 ];
 
-
 const questionsSergente = [
     { q: "In presenza di un coordinatore radio, quale deve essere il comportamento di un Sergente sul campo?", options: ["Limitarsi a ricevere informazioni", "Coordinare solo la propria pattuglia", "Seguire e far rispettare gli ordini del coordinatore", "Agire in autonomia per rapidità operativa"], correct: 2 },
     { q: "Chi ha la responsabilità finale durante una Joint Operation interforze?", options: ["Il responsabile dell’agenzia capofila", "Il coordinatore radio", "Il grado più alto presente", "Il comando centrale"], correct: 2 },
@@ -64,19 +63,19 @@ const questionsSergente = [
     { q: "Qual è l’obiettivo primario di un Sergente in servizio?", options: ["Essere presente sul campo", "Garantire efficienza operativa", "Garantire sicurezza e rispetto delle procedure", "Supportare attivamente gli agenti"], correct: 2 }
 ];
 
-
-
 // --- VARIABILI GLOBALI ---
 let currentQuestionsDB = [];
 let currentQuestion = 0;
 let score = 0;
 let userName = "";
 let examType = "";
-let timeLeft = 1800; 
+let timeLeft = 1200; 
 let timerInterval;
 let isExamStarted = false;
 let userAnswers = []; 
 let startTime;
+let cheatTries = 3;
+let isCheatProcessing = false;
 
 // --- INIZIALIZZAZIONE ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -98,23 +97,52 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 
-function showNotification(message, type = 'error') {
+// --- SISTEMA DI NOTIFICHE AVANZATO ---
+function showNotification(message, type = 'error', isCheat = false) {
     const container = document.getElementById('notification-container');
     if (!container) return;
+    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    if (isCheat) toast.style.minWidth = "400px";
+
     let icon = "⚠️";
     if(type === 'success') icon = "✅";
     if(type === 'error') icon = "🚫";
     if(type === 'warning') icon = "⚡";
-    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span style="font-size: 1.5rem;">${icon}</span>
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold; text-transform: uppercase;">LSPD - Sistema Controllo</div>
+                <div style="font-size: 0.9rem;">${message}</div>
+            </div>
+            ${isCheat ? `<button onclick="restoreAndClose(this)" style="background: white; color: var(--error-red); border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; margin-left: 10px;">Ripristina</button>` : ''}
+        </div>
+    `;
+    
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.style.animation = "toastOut 0.4s forwards";
-        setTimeout(() => toast.remove(), 400);
-    }, 4000);
+
+    if (!isCheat) {
+        setTimeout(() => {
+            toast.style.animation = "toastOut 0.4s forwards";
+            setTimeout(() => toast.remove(), 400);
+        }, 5000);
+    }
 }
 
+function restoreAndClose(btn) {
+    const toast = btn.closest('.toast');
+    enterFullScreen(); // Il comando ora funziona perché innescato da un click reale
+    setTimeout(() => {
+        isCheatProcessing = false;
+        toast.style.animation = "toastOut 0.4s forwards";
+        setTimeout(() => toast.remove(), 400);
+    }, 500);
+}
+
+// --- LOGICA LOGIN E RP ---
 function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -144,35 +172,20 @@ function confirmIdentity() {
     showNotification(`IDENTITÀ REGISTRATA: ${userName}`, "success");
 }
 
-function backToName() {
-    document.getElementById('course-section').classList.add('hidden');
-    document.getElementById('rp-section').classList.remove('hidden');
-    showNotification("RESET IDENTITÀ IN CORSO", "warning");
-}
-
 function selectExam(type) {
-    // 1. Identifica il database corretto
     let dbOriginale = type === 'recluta' ? questionsRecluta : questionsSergente;
-    
-    // 2. RANDOMIZZAZIONE: Mescola le domande e ne prende 20
-    // Usiamo lo spread operator [...] per non modificare l'ordine originale nel file
     currentQuestionsDB = shuffleArray([...dbOriginale]).slice(0, 20); 
-
-    // 3. Impostazioni esame
     examType = type === 'recluta' ? "RECLUTA / CADETTO" : "SERGENTE";
     userAnswers = new Array(currentQuestionsDB.length).fill(undefined);
     currentQuestion = 0;
     
-    // 4. Interfaccia
     document.getElementById('nameModal').classList.add('hidden');
     document.getElementById('course-section').classList.add('hidden');
     document.getElementById('briefing-title').innerText = `BRIEFING ESAME ${examType}`;
     document.getElementById('briefing-section').classList.remove('hidden');
-    
     showNotification("DATA-PACK MESCOLATO E CARICATO", "warning");
 }
 
-// Funzione Utility per mescolare l'array (Algoritmo Fisher-Yates)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -181,36 +194,17 @@ function shuffleArray(array) {
     return array;
 }
 
-function cancelBriefing() {
-    document.getElementById('briefing-section').classList.add('hidden');
-    document.getElementById('nameModal').classList.remove('hidden');
-    document.getElementById('course-section').classList.remove('hidden');
-    showNotification("REINDIRIZZAMENTO ALLA SELEZIONE CORSI", "warning");
-}
-
 function startFinalExam() {
+    enterFullScreen();
     startTime = new Date(); 
     document.getElementById('briefing-section').classList.add('hidden');
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('exam-timer').classList.remove('hidden');
     document.getElementById('exam-title-display').innerText = `ESAME ${examType}`;
-    if(document.getElementById('abort-btn')) document.getElementById('abort-btn').classList.remove('hidden');
     isExamStarted = true;
     startTimer();
     loadQuestion();
-    showNotification("TEST AVVIATO - BUONA FORTUNA", "success");
-}
-
-function confirmAbort() { document.getElementById('abort-modal').classList.remove('hidden'); }
-function closeAbortModal() { document.getElementById('abort-modal').classList.add('hidden'); }
-
-async function abortExam() {
-    clearInterval(timerInterval);
-    isExamStarted = false; 
-    localStorage.setItem("pendingNotification", "OPERAZIONE ANNULLATA");
-    localStorage.setItem("pendingType", "error");
-    await sendToDiscord(userName, 0, 0, "🛑 ANNULLATO", examType);
-    location.reload();
+    showNotification("TEST AVVIATO - SCHERMO INTERO ATTIVATO", "success");
 }
 
 function startTimer() {
@@ -227,21 +221,12 @@ function startTimer() {
     }, 1000);
 }
 
-function jumpToQuestion(index) {
-    currentQuestion = index;
-    loadQuestion();
-}
-
+// --- QUIZ CORE ---
 function loadQuestion() {
     const quizBox = document.getElementById('quiz-box');
     const qData = currentQuestionsDB[currentQuestion];
-    const progressBar = document.getElementById('progress-bar');
-    
-    if (progressBar) progressBar.style.width = ((currentQuestion + 1) / currentQuestionsDB.length * 100) + "%";
-    
     const isLastQuestion = currentQuestion === currentQuestionsDB.length - 1;
 
-    // Generazione della barra numerica
     const questionDots = currentQuestionsDB.map((_, i) => {
         let stateClass = "";
         if (i === currentQuestion) stateClass = "active";
@@ -253,15 +238,8 @@ function loadQuestion() {
         <div class="question-nav-bar" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center;">
             ${questionDots}
         </div>
-
-        <h2 style="color: var(--main-blue); font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase;">
-            MODULO ${currentQuestion + 1} / ${currentQuestionsDB.length}
-        </h2>
-        
-        <div class="question-text" style="font-size: 1.1rem; margin-bottom: 25px; padding: 15px; background: rgba(0, 114, 255, 0.05); border-left: 3px solid var(--main-blue);">
-            ${qData.q}
-        </div>
-
+        <h2 style="color: var(--main-blue); font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase;">MODULO ${currentQuestion + 1} / ${currentQuestionsDB.length}</h2>
+        <div class="question-text" style="font-size: 1.1rem; margin-bottom: 25px; padding: 15px; background: rgba(0, 114, 255, 0.05); border-left: 3px solid var(--main-blue);">${qData.q}</div>
         <div class="options-list">
             ${qData.options.map((opt, i) => `
                 <button class="option ${userAnswers[currentQuestion] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
@@ -269,123 +247,137 @@ function loadQuestion() {
                 </button>
             `).join('')}
         </div>
-
         <div class="nav-controls" style="margin-top: 30px; display: flex; justify-content: center;">
             ${isLastQuestion 
                 ? `<button class="btn-primary" style="width: 100%; background: var(--success-green) !important;" onclick="openReviewModal()">REVISIONE FINALE</button>`
-                : `<p style="font-size: 0.8rem; opacity: 0.5; font-style: italic;">Seleziona una risposta per proseguire o usa i numeri in alto per navigare</p>`
+                : `<p style="font-size: 0.8rem; opacity: 0.5; font-style: italic;">Seleziona una risposta per proseguire</p>`
             }
         </div>
     `;
 }
 
 function selectAnswer(idx) {
-    // 1. Salva la risposta nell'array
     userAnswers[currentQuestion] = idx;
-    
-    // 2. Ricarica la domanda per mostrare graficamente il tasto selezionato
     loadQuestion(); 
-
-    // 3. Aspetta un breve momento (300ms) per dare feedback visivo, poi passa alla successiva
-    // Se è l'ultima domanda, non fa nulla (l'utente dovrà premere "Revisione Finale")
     if (currentQuestion < currentQuestionsDB.length - 1) {
         setTimeout(() => {
             currentQuestion++;
             loadQuestion();
-        }, 300); // 300 millisecondi di ritardo
-    } else {
-        showNotification("ULTIMA DOMANDA RAGGIUNTA - CONTROLLA E INVIA", "warning");
+        }, 300);
     }
 }
 
-function nextQuestion() {
-    if (userAnswers[currentQuestion] === undefined) {
-        return showNotification("SELEZIONA UNA RISPOSTA", "error");
-    }
-    if (currentQuestion < currentQuestionsDB.length - 1) {
-        currentQuestion++;
-        loadQuestion();
-    }
-}
-
-function prevQuestion() {
-    if (currentQuestion > 0) {
-        currentQuestion--;
-        loadQuestion();
-    }
+function jumpToQuestion(idx) {
+    currentQuestion = idx;
+    loadQuestion();
 }
 
 function openReviewModal() {
-    if (userAnswers.includes(undefined)) {
-        return showNotification("MANCANO DELLE RISPOSTE!", "error");
-    }
+    if (userAnswers.includes(undefined)) return showNotification("MANCANO DELLE RISPOSTE!", "error");
     document.getElementById('review-modal').classList.remove('hidden');
 }
 
-function closeReviewModal() {
-    document.getElementById('review-modal').classList.add('hidden');
-}
+function closeReviewModal() { document.getElementById('review-modal').classList.add('hidden'); }
 
 async function submitExam() {
     if (document.getElementById('review-modal')) closeReviewModal();
     clearInterval(timerInterval);
-    
     const endTime = new Date();
-    const diff = Math.abs(endTime - startTime);
-    const minutes = Math.floor((diff / 1000) / 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-    const tempoImpiegato = `${minutes}m ${seconds}s`;
+    const tempoImpiegato = `${Math.floor((Math.abs(endTime - startTime) / 1000) / 60)}m ${Math.floor((Math.abs(endTime - startTime) / 1000) % 60)}s`;
 
     score = 0;
     let reportDettagliato = "";
-
     currentQuestionsDB.forEach((q, index) => {
-        const rispostaUtente = userAnswers[index];
-        const isCorretta = rispostaUtente === q.correct;
+        const isCorretta = userAnswers[index] === q.correct;
         if (isCorretta) score++;
-        
-        // Costruisce il report per Discord
-        reportDettagliato += `**D${index + 1}:** ${q.q}\n`;
-        reportDettagliato += `${isCorretta ? "✅" : "❌"} Risposta data: *${q.options[rispostaUtente] || "Nessuna"}*\n\n`;
+        reportDettagliato += `**D${index + 1}:** ${q.q}\n${isCorretta ? "✅" : "❌"} Risposta: *${q.options[userAnswers[index]] || "Nessuna"}*\n\n`;
     });
 
-    const total = currentQuestionsDB.length;
-    const percent = Math.round((score / total) * 100);
-
-    // --- CALCOLO IDONEITÀ DINAMICO (Esempio: 75% per passare) ---
-    // Se vuoi restare fedele ai "15 su 20", il 75% è la misura perfetta.
+    const percent = Math.round((score / currentQuestionsDB.length) * 100);
     const status = percent >= 75 ? "IDONEO" : "NON IDONEO";
 
-    showResults(score, total, percent, status);
-    
-    // Invio ai Webhook
+    showResults(score, currentQuestionsDB.length, percent, status);
     await sendToDiscord(userName, score, percent, status, examType);
     await sendDetailedToDiscord(userName, score, reportDettagliato, examType, tempoImpiegato);
 }
 
 function showResults(pts, total, perc, stat) {
     isExamStarted = false;
+    if (document.fullscreenElement) document.exitFullscreen();
     document.getElementById('quiz-box').classList.add('hidden');
     document.getElementById('result').classList.remove('hidden');
     document.getElementById('exam-timer').classList.add('hidden');
-    if(document.getElementById('abort-btn')) document.getElementById('abort-btn').classList.add('hidden');
-    
-    // CAMBIO QUI: Usiamo 'stat' (che è calcolato sulla percentuale) per decidere il colore
-    const isPass = stat === "IDONEO";
-    const color = isPass ? 'var(--success-green)' : 'var(--error-red)';
-
+    const color = stat === "IDONEO" ? 'var(--success-green)' : 'var(--error-red)';
     document.getElementById('score-display').innerHTML = `
         <div style="border: 1px solid ${color}; padding: 25px; background: rgba(0,0,0,0.3);">
             <h3 style="color: ${color};">ESITO: ${stat}</h3>
             <p>AGENTE: ${userName}</p>
             <p>PUNTEGGIO: ${pts}/${total} (${perc}%)</p>
-            <p style="font-size: 0.8rem; margin-top: 15px; opacity: 0.7;">I dati sono stati inviati al database centrale LSPD.</p>
         </div>`;
 }
 
+// --- ANTI-CHEAT ENGINE OTTIMIZZATO ---
+function handleCheatDetected(reason) {
+    if (!isExamStarted || isCheatProcessing) return;
+
+    isCheatProcessing = true;
+    cheatTries--;
+
+    if (cheatTries > 0) {
+        showNotification(`SISTEMA ANTI-MANOMISSIONE: ${reason}. Tentativi rimasti: ${cheatTries}`, "error", true);
+    } else {
+        forceAbortExam(`ESPULSIONE AUTOMATICA: ${reason}`);
+    }
+}
+
+function enterFullScreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && isExamStarted) {
+        handleCheatDetected("CAMBIO SCHEDA/APP");
+    }
+});
+
+const checkWindowSize = () => {
+    if (!isExamStarted || isCheatProcessing) return;
+    const isNotFullscreen = !document.fullscreenElement && !document.webkitFullscreenElement;
+    const isSmallWindow = window.innerWidth < (screen.width - 100) || window.innerHeight < (screen.height - 100);
+    if (isNotFullscreen || isSmallWindow) {
+        handleCheatDetected("USCITA DA AREA DI TEST");
+    }
+};
+
+document.addEventListener('fullscreenchange', checkWindowSize);
+window.addEventListener('resize', checkWindowSize);
+
+async function forceAbortExam(reason) {
+    isExamStarted = false;
+    clearInterval(timerInterval);
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+
+    localStorage.setItem("pendingNotification", `TEST ANNULLATO: ${reason}`);
+    localStorage.setItem("pendingType", "error");
+    await sendToDiscord(userName, 0, 0, `🛑 ${reason}`, examType);
+    location.reload();
+}
+
+// Blocchi tastiera e mouse
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', (e) => {
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || (e.ctrlKey && e.key === "u")) {
+        e.preventDefault();
+        showNotification("AZIONE BLOCCATA", "error");
+    }
+});
+
+// --- DISCORD WEBHOOKS ---
 async function sendToDiscord(user, pts, perc, stat, type) {
     let color = stat === "IDONEO" ? 3066993 : 15158332;
-    if (stat.includes("ANNULLATO")) color = 8355711;
+    if (stat.includes("ESPULSIONE") || stat.includes("ANNULLATO")) color = 0;
 
     const payload = {
         embeds: [{
@@ -394,44 +386,30 @@ async function sendToDiscord(user, pts, perc, stat, type) {
             fields: [
                 { name: "👤 Agente", value: `\`${user}\``, inline: true },
                 { name: "⚖️ Verdetto", value: `**${stat}**`, inline: true },
-                { name: "📊 Risultato", value: `Punti: ${pts}/${currentQuestionsDB.length} (${perc}%)` }
+                { name: "📊 Risultato", value: `Punti: ${pts}/20 (${perc}%)` }
             ],
-            footer: { 
-                text: "LSPD - Sistema Corsi" 
-            },
+            footer: { text: "LSPD - Gestione esami" },
             timestamp: new Date().toISOString()
         }]
     };
-
-    try {
-        await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {
-        console.error("Errore invio report principale");
-    }
+    await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
 }
 
 async function sendDetailedToDiscord(user, pts, report, type, durata) {
     const payload = {
         embeds: [{
-            title: `🔍 REVISIONE ISTRUTTORI - ${user}`,
+            title: `🔍 REVISIONE - ${user}`,
             color: 3447003,
             description: report,
             fields: [
-                { name: "📋 Tipo Esame", value: type, inline: true },
-                { name: "⏱️ Durata", value: durata, inline: true },
-                { name: "📊 Esito", value: `${pts}/${currentQuestionsDB.length}`, inline: true }
+                { name: "📋 Tipo", value: type, inline: true },
+                { name: "⏱️ Durata", value: durata, inline: true }
             ],
-            footer: { text: "LSPD - Sistema Corsi" },
+            footer: { text: "LSPD - Gestione esami" },
             timestamp: new Date().toISOString()
         }]
     };
-    try {
-        await fetch(WEBHOOK_DETTAGLI_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-    } catch (e) { console.error("Errore invio dettagli"); }
+    await fetch(WEBHOOK_DETTAGLI_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
 }
 
 function finalLogout() {
@@ -439,67 +417,3 @@ function finalLogout() {
     localStorage.setItem("pendingType", "success");
     location.reload();
 }
-
-window.onbeforeunload = () => { if (isExamStarted) return "Il test verrà annullato!"; };
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// --- SISTEMA ANTI-CHEAT ---
-
-// 1. Rileva se l'utente cambia scheda o riduce il browser (ALT-TAB / TASTO WINDOWS)
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && isExamStarted) {
-        forceAbortExam("VIOLAZIONE RILEVATA: USCITA DAL TERMINALE");
-    }
-});
-
-// 2. Funzione per l'annullamento forzato (Senza alert di sistema)
-async function forceAbortExam(reason) {
-    if (!isExamStarted) return;
-    
-    clearInterval(timerInterval);
-    isExamStarted = false;
-    
-    // Salviamo il messaggio per mostrarlo tramite showNotification al ricaricamento
-    localStorage.setItem("pendingNotification", reason);
-    localStorage.setItem("pendingType", "error");
-
-    // Invio log immediato a Discord
-    await sendToDiscord(userName, 0, 0, `🛑 ANNULLATO: ${reason}`, examType);
-    
-    // Ricarica la pagina per resettare il terminale
-    location.reload();
-}
-
-// 3. Impedisce il tasto destro su tutto il portale
-document.addEventListener('contextmenu', event => event.preventDefault());
-
-// 4. Impedisce scorciatoie tastiera comuni per il debug (F12, Ctrl+Shift+I, Ctrl+U)
-document.addEventListener('keydown', (e) => {
-    if (
-        e.key === "F12" || 
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || 
-        (e.ctrlKey && e.key === "u")
-    ) {
-        e.preventDefault();
-        showNotification("AZIONE NON AUTORIZZATA", "error");
-    }
-});
-
-
-// Impedisce il tasto destro su tutto il portale
-document.addEventListener('contextmenu', event => event.preventDefault());
-
-// Impedisce scorciatoie tastiera comuni per il debug (F12, Ctrl+Shift+I)
-document.addEventListener('keydown', (e) => {
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-        e.preventDefault();
-        showNotification("AZIONE NON AUTORIZZATA", "error");
-    }
-});

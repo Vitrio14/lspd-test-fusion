@@ -145,24 +145,45 @@ function restoreAndClose(btn) {
     }, 500);
 }
 
+// --- CONFIGURAZIONE LOGICA ACCESSO ---
+const AUTHORIZED_EMAIL_EXAM = "lspd-esami@fusion.it";
+
 // --- LOGICA LOGIN E RP ---
 function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const loginBtn = document.getElementById('loginBtn');
+
     if (!email || !password) return showNotification("DATI MANCANTI", "error");
+
+    // 1. Controllo preventivo dell'email autorizzata
+    if (email.toLowerCase() !== AUTHORIZED_EMAIL_EXAM.toLowerCase()) {
+        showNotification("ACCESSO NEGATO: UTENTE NON AUTORIZZATO", "error");
+        return;
+    }
+
     loginBtn.innerText = "ACCESSO IN CORSO...";
     loginBtn.disabled = true;
+
     auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-            showNotification("ACCESSO AUTORIZZATO", "success");
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('rp-section').classList.remove('hidden');
+        .then((userCredential) => {
+            // 2. Doppio controllo di sicurezza post-autenticazione
+            if (userCredential.user.email.toLowerCase() === AUTHORIZED_EMAIL_EXAM.toLowerCase()) {
+                showNotification("ACCESSO AUTORIZZATO", "success");
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('rp-section').classList.remove('hidden');
+            } else {
+                // Se per qualche motivo entra un'altra mail, disconnetti subito
+                auth.signOut();
+                showNotification("ACCESSO NEGATO: CREDENZIALI NON VALIDE", "error");
+                loginBtn.innerText = "EFFETTUA LOGIN";
+                loginBtn.disabled = false;
+            }
         })
-        .catch(() => {
+        .catch((error) => {
             loginBtn.innerText = "EFFETTUA LOGIN";
             loginBtn.disabled = false;
-            showNotification("ACCESSO NEGATO", "error");
+            showNotification("ERRORE: CREDENZIALI NON VALIDE", "error");
         });
 }
 
@@ -456,4 +477,5 @@ function finalLogout() {
     localStorage.setItem("pendingNotification", "TERMINALE RESETTATO");
     localStorage.setItem("pendingType", "success");
     location.reload();
+
 }
